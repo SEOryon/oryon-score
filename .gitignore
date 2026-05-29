@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+.env
+*.log
+.vercel
+.DS_Store
+node_modules/
+report.json
+.pytest_cache/
+.coverage

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Oryon AI Search Readiness Score · Free</title>
+  <meta name="description" content="Score any URL for AI search readiness. Free, open-source, no signup. Built by Oryon — your organic growth engine." />
+  <meta property="og:title" content="Oryon AI Search Readiness Score" />
+  <meta property="og:description" content="Score any URL for AI search readiness. Free, open-source, no signup." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://score.seoryon.com" />
+  <link rel="canonical" href="https://score.seoryon.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Oryon AI Search Readiness Score",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "url": "https://score.seoryon.com",
+      "description": "Free open-source tool that scores any URL for AI search readiness.",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+      "creator": { "@type": "Organization", "name": "SEOryon", "url": "https://seoryon.com" }
+    }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <a href="https://seoryon.com" class="brand" aria-label="SEOryon">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4F3FD9"/><stop offset="100%" stop-color="#9990FF"/></linearGradient></defs>
+          <rect x="6" y="6" width="188" height="188" rx="42" fill="url(#lg)"/>
+          <path d="M 60 70 L 140 70 L 140 95 L 80 95 L 80 105 L 140 105 L 140 130 L 60 130 L 60 105 L 120 105 L 120 95 L 60 95 Z" fill="#fff" opacity="0.95"/>
+        </svg>
+      </span>
+      <span class="wordmark">SEOryon</span>
+    </a>
+    <nav class="navlinks">
+      <a href="https://github.com/SEOryon/oryon-score" rel="noopener" target="_blank">GitHub</a>
+      <a href="https://seoryon.com" class="cta-link">Try Oryon free →</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow"><span class="dot"></span>FREE · OPEN SOURCE · NO SIGNUP</div>
+      <h1>Score any URL for <span class="grad">AI search readiness</span>.</h1>
+      <p class="sub">Twenty-seven signals across schema, content format, authority, crawlability, and freshness. Inspired by Google's 2026 AI search guidance. Results in 10 seconds.</p>
+
+      <form id="scoreForm" class="urlform" autocomplete="off">
+        <input id="urlInput" type="text" name="url" placeholder="example.com/blog/your-best-article" inputmode="url" autofocus aria-label="URL to score" />
+        <button type="submit" id="scoreBtn">Score it →</button>
+      </form>
+      <p class="microcopy">Tip: paste an article URL, not the homepage. The deeper the page, the more useful the score.</p>
+    </section>
+
+    <section id="result" class="result hidden" aria-live="polite"></section>
+
+    <section class="how">
+      <h2>How it works</h2>
+      <div class="grid3">
+        <div class="card">
+          <div class="num">1</div>
+          <h3>You paste a URL</h3>
+          <p>Any public page. We fetch it the same way Google's AI crawlers do.</p>
+        </div>
+        <div class="card">
+          <div class="num">2</div>
+          <h3>We score 27 signals</h3>
+          <p>Schema markup, FAQ blocks, heading structure, llms.txt, robots permissions, word count, dated claims, and more.</p>
+        </div>
+        <div class="card">
+          <div class="num">3</div>
+          <h3>You get the fixes</h3>
+          <p>A 0–100 score plus the top 8 fixes ranked by impact. No fluff.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="upsell">
+      <div class="upsell-inner">
+        <div>
+          <div class="eyebrow"><span class="dot"></span>WANT THIS FOR YOUR WHOLE SITE?</div>
+          <h2>One page is the demo.<br/><span class="grad">Your whole site is the product.</span></h2>
+          <p>Oryon scores every URL on your site continuously, tracks where you're cited across ChatGPT, Perplexity, Gemini and Google AI — then writes the articles that get you cited.</p>
+          <a href="https://seoryon.com" class="bigcta">Start free trial →</a>
+          <p class="microcopy">3-day trial. 3 real articles on your site before any charge. Cancel in two clicks.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div>
+        <span class="wordmark sm">SEOryon</span> · <a href="https://github.com/SEOryon/oryon-score">Open source on GitHub</a> · <a href="https://seoryon.com">seoryon.com</a>
+      </div>
+      <p class="microcopy">Inspired by the structured-signal approach in citation-intelligence by AutomateLab. This tool is original work under MIT.</p>
+    </footer>
+  </main>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>

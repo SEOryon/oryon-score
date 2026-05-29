@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "web/index.html", "use": "@vercel/static" },
+    { "src": "web/**", "use": "@vercel/static" },
+    { "src": "api/score.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/api/score", "dest": "/api/score.py" },
+    { "src": "/(style.css|app.js|.*\\.(png|jpg|svg|ico|webp))", "dest": "/web/$1" },
+    { "src": "/(.*)", "dest": "/web/index.html" }
+  ]
+}

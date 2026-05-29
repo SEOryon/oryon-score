@@ -1,0 +1,24 @@
+{
+  "url": "https://example.com/blog/ai-overview-guide",
+  "score": 62,
+  "grade": "C",
+  "fetched_at": "2026-05-29T15:42:11Z",
+  "page_title": "The AI Overview Guide: How to Get Cited by Google AI",
+  "bucket_scores": {
+    "schema_structure": { "earned": 18.6, "max": 30, "percent": 62.0 },
+    "content_format":   { "earned": 17.0, "max": 25, "percent": 68.0 },
+    "authority":        { "earned": 12.0, "max": 20, "percent": 60.0 },
+    "crawlability":     { "earned": 11.4, "max": 15, "percent": 76.0 },
+    "freshness":        { "earned": 3.0,  "max": 10, "percent": 30.0 }
+  },
+  "fixes": [
+    "Wrap your FAQ section in FAQPage JSON-LD — highest-correlation signal for AI Overview citations.",
+    "Add a 50-word TL;DR after the H1. AI summarizers lift TL;DR blocks at much higher rates.",
+    "Expose a dateModified in JSON-LD or via Last-Modified header. AI prioritizes fresh content.",
+    "Use 'As of {month} 2026' on every claim. Undated content reads stale to AI models.",
+    "If the content is time-sensitive, include the year in the title (e.g. '... in 2026').",
+    "Cite 2+ authority sources (.gov, .edu, Wikipedia). Provenance is an extraction signal.",
+    "Convert ≥2 H2s to actual user questions. AI Overviews extract Q&A patterns disproportionately."
+  ],
+  "notes": []
+}
