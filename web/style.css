@@ -1,59 +1,46 @@
 /* ============================================================
-   SEOryon — official LOCKED brand system v3 (2026-05-30)
-   Blue-indigo primary, purple accent. See seoryon-brand memory.
-   Differentiation: own blue-indigo system color + purple accent,
-   NOT all-purple (that's competitor Soro).
+   SEOryon — LOCKED brand system v4 (2026-05-30)
+   Primary: #4A35E8 indigo-purple. See seoryon-brand memory.
    ============================================================ */
 :root {
-  /* Brand — BLUE-INDIGO PRIMARY */
-  --brand-primary: #5B6AF7;
-  --brand-hover:   #4958E8;
-  --brand-pressed: #3D47CC;
-
-  /* Purple — ACCENT ONLY (not primary) */
-  --brand-purple:  #5E4DF2;
-  --brand-violet:  #7065FF;
-  --brand-lavender:#9C87FF;
-  --brand-soft:    #C9C1FF;
-  --brand-tint:    #F3F4FF;
-  --brand-deep-star:#170A66;
+  /* Brand */
+  --brand-primary: #4A35E8;
+  --brand-hover:   #3B28CB;
+  --brand-pressed: #3525BF;
+  --brand-light:   #9A88FF;
+  --brand-tint:    #F4F2FF;
 
   /* Ink */
-  --ink-primary:   #101426;
-  --ink-secondary: #4D556E;
-  --ink-muted:     #77809A;
-  --ink-hairline:  #A6AEC6;
+  --ink-primary:   #121325;
+  --ink-secondary: #52586E;
+  --ink-muted:     #7B8096;
   --ink-on-brand:  #FFFFFF;
 
   /* Surfaces */
-  --surface-page:         #FFFFFF;
-  --surface-section:      #F7F8FC;
-  --surface-brand:        #F3F4FF;
-  --surface-card:         #FFFFFF;
-  --surface-soft-card:    #FAFBFF;
-  --surface-hover:        #F4F6FC;
-  --surface-border:       #E5E9F5;
-  --surface-strong-border:#D8DEEF;
+  --surface-page:      #FFFFFF;
+  --surface-section:   #F8F8FC;
+  --surface-card:      #FFFFFF;
+  --surface-soft-card: #FAFAFE;
+  --surface-border:    #E7E4F2;
 
   /* States */
-  --success-bg: #F4FBF6;
-  --success-strong-bg: #E8F6EE;
-  --success-text: #0F7A4A;
+  --success-bg:     #F4FBF6;
+  --success-text:   #0F7A4A;
   --success-border: #BFE5CB;
-  --warning-bg: #FFF4D6;
-  --warning-text: #7C4A09;
+  --warning-bg:     #FFF4D6;
+  --warning-text:   #7C4A09;
   --warning-border: #FCD9A1;
-  --danger-bg: #FBE4E9;
-  --danger-text: #DC2626;
-  --danger-border: #F8C7CF;
+  --danger-bg:      #FBE4E9;
+  --danger-text:    #DC2626;
+  --danger-border:  #F8C7CF;
 
-  /* Oryon gradient — ends in BLUE-INDIGO so we don't look like a purple competitor */
-  --oryon-gradient: linear-gradient(135deg, #9C87FF 0%, #7065FF 42%, #5B6AF7 100%);
+  /* Oryon gradient — reserved for AI/Oryon actions */
+  --oryon-gradient: linear-gradient(135deg, #9A88FF 0%, #6D5AF6 42%, #4A35E8 100%);
 
-  /* Shadows — subtle, product-like */
-  --shadow-card: 0 12px 30px rgba(16, 20, 38, 0.06);
-  --shadow-brand-soft: 0 10px 24px rgba(91, 106, 247, 0.10);
-  --shadow-brand: 0 8px 18px rgba(91, 106, 247, 0.16);
+  /* Shadows — subtle */
+  --shadow-card: 0 12px 30px rgba(18, 19, 37, 0.06);
+  --shadow-brand-soft: 0 10px 24px rgba(74, 53, 232, 0.10);
+  --shadow-brand: 0 8px 18px rgba(74, 53, 232, 0.16);
 }
 
 /* ============================================================
@@ -89,10 +76,10 @@ a:hover { color: var(--brand-hover); }
   display: inline-flex; align-items: center; gap: 6px;
 }
 
-/* Secondary chips — GitHub, pip install (white card, strong border, blue text) */
+/* Secondary chips — GitHub, pip install */
 .navlinks a.nav-secondary {
   padding: 9px 14px;
-  border: 1px solid var(--surface-strong-border);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--surface-card);
   color: var(--brand-hover);
@@ -104,7 +91,7 @@ a:hover { color: var(--brand-hover); }
   color: var(--brand-hover);
 }
 
-/* Primary CTA — solid BLUE-INDIGO, rounded-xl, subtle shadow */
+/* Primary CTA — solid brand */
 .navlinks a.cta-link {
   background: var(--brand-primary);
   color: var(--ink-on-brand);
@@ -134,7 +121,7 @@ main { max-width: 960px; margin: 0 auto; padding: 0 24px 96px; }
   text-transform: uppercase; letter-spacing: 0.14em;
   color: var(--brand-hover);
   background: var(--brand-tint);
-  border: 1px solid var(--surface-strong-border);
+  border: 1px solid var(--surface-border);
   padding: 7px 12px; border-radius: 100px;
   margin-bottom: 28px;
 }
@@ -152,7 +139,7 @@ h1 {
   max-width: 18ch;
 }
 
-/* Oryon-gradient text — reserved for hero AI/Oryon highlight */
+/* Oryon-gradient text — hero highlight only */
 .grad {
   background: var(--oryon-gradient);
   -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -169,19 +156,19 @@ h1 {
 #urlInput {
   flex: 1; font-family: 'Geist Mono', monospace; font-size: 15px;
   padding: 16px 18px;
-  border: 1.5px solid var(--surface-strong-border);
+  border: 1.5px solid var(--surface-border);
   background: var(--surface-card);
   color: var(--ink-primary);
   border-radius: 12px;
   outline: none; transition: border-color 0.15s, box-shadow 0.15s;
 }
-#urlInput::placeholder { color: var(--ink-hairline); }
+#urlInput::placeholder { color: var(--ink-muted); }
 #urlInput:focus {
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 4px rgba(91, 106, 247, 0.12);
+  box-shadow: 0 0 0 4px rgba(74, 53, 232, 0.12);
 }
 
-/* "Score it →" is an Oryon/AI action — Oryon gradient allowed */
+/* "Score it →" — Oryon/AI action, gradient allowed */
 #scoreBtn {
   font-family: 'Geist', sans-serif; font-weight: 700; font-size: 15px;
   color: var(--ink-on-brand);
@@ -291,7 +278,7 @@ h1 {
 }
 .bucket-fill {
   height: 100%; border-radius: 100px;
-  background: var(--brand-primary);   /* solid blue-indigo */
+  background: var(--brand-primary);
   transition: width 0.4s ease;
 }
 .bucket-pts {
@@ -372,7 +359,7 @@ h1 {
 .card p { font-size: 14px; color: var(--ink-secondary); line-height: 1.55; }
 
 /* ============================================================
-   Upsell card — Oryon-gradient (THE Oryon section, gradient allowed)
+   Upsell card — Oryon-gradient (THE Oryon section)
    ============================================================ */
 .upsell { margin-top: 96px; }
 .upsell-inner {
@@ -390,7 +377,7 @@ h1 {
 .upsell .eyebrow .dot { background: #FFFFFF; }
 .upsell h2 { color: #FFFFFF; margin-bottom: 14px; }
 .upsell .grad {
-  background: linear-gradient(135deg, #FFFFFF 0%, #E5EBFF 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #E5E1FF 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .upsell p {
@@ -399,7 +386,7 @@ h1 {
 }
 .upsell .microcopy { color: rgba(255,255,255,0.75); margin-top: 14px; }
 
-/* Big CTA on upsell card — white solid card, blue text, rounded-xl */
+/* Big CTA on upsell card — white solid, brand text, rounded-xl */
 .bigcta {
   display: inline-block;
   background: var(--surface-page);
