@@ -9,10 +9,5 @@
     { "src": "/api/score", "dest": "/api/score.py" },
     { "src": "/(style.css|app.js|logo\\.png|.*\\.(png|jpg|svg|ico|webp))", "dest": "/web/$1" },
     { "src": "/(.*)", "dest": "/web/index.html" }
-  ],
-  "functions": {
-    "api/score.py": {
-      "maxDuration": 10
-    }
-  }
+  ]
 }
