@@ -24,7 +24,7 @@ UA = (
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 "
     "OryonAISearchScore/1.0 (+https://seoryon.com)"
 )
-TIMEOUT_S = 15.0
+TIMEOUT_S = 8.0  # Stay under Vercel's hobby 10s function limit, leaving time for parsing
 
 # AI crawler user agents we check robots.txt against
 AI_CRAWLERS = [

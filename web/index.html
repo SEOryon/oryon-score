@@ -9,7 +9,9 @@
   <meta property="og:description" content="Score any URL for AI search readiness. Free, open-source, no signup." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://score.seoryon.com" />
+  <meta property="og:image" content="https://score.seoryon.com/logo.png" />
   <link rel="canonical" href="https://score.seoryon.com" />
+  <link rel="icon" type="image/png" href="/logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -30,19 +32,17 @@
 </head>
 <body>
   <header class="topbar">
-    <a href="https://seoryon.com" class="brand" aria-label="SEOryon">
-      <span class="logo" aria-hidden="true">
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4F3FD9"/><stop offset="100%" stop-color="#9990FF"/></linearGradient></defs>
-          <rect x="6" y="6" width="188" height="188" rx="42" fill="url(#lg)"/>
-          <path d="M 60 70 L 140 70 L 140 95 L 80 95 L 80 105 L 140 105 L 140 130 L 60 130 L 60 105 L 120 105 L 120 95 L 60 95 Z" fill="#fff" opacity="0.95"/>
-        </svg>
-      </span>
-      <span class="wordmark">SEOryon</span>
+    <a href="https://app.seoryon.com/?utm_source=score-tool&utm_medium=brand" class="brand" aria-label="SEOryon">
+      <img src="/logo.png" class="logo-img" alt="SEOryon" />
     </a>
     <nav class="navlinks">
-      <a href="https://github.com/SEOryon/oryon-score" rel="noopener" target="_blank">GitHub</a>
-      <a href="https://seoryon.com" class="cta-link">Try Oryon free →</a>
+      <a href="https://github.com/SEOryon/oryon-score" rel="noopener" target="_blank" class="nav-secondary">
+        <span aria-hidden="true">★</span> GitHub
+      </a>
+      <a href="https://pypi.org/project/oryon-score/" rel="noopener" target="_blank" class="nav-secondary">
+        <span aria-hidden="true">⬇</span> pip install
+      </a>
+      <a href="https://app.seoryon.com/signup?utm_source=score-tool&utm_medium=topbar&utm_campaign=trial" class="cta-link">Start free trial →</a>
     </nav>
   </header>
 
@@ -57,6 +57,23 @@
         <button type="submit" id="scoreBtn">Score it →</button>
       </form>
       <p class="microcopy">Tip: paste an article URL, not the homepage. The deeper the page, the more useful the score.</p>
+
+      <div class="download-row">
+        <a href="https://github.com/SEOryon/oryon-score" target="_blank" rel="noopener" class="dl-chip">
+          <span class="dl-icon" aria-hidden="true">★</span>
+          <span class="dl-label">
+            <span class="dl-title">Star on GitHub</span>
+            <span class="dl-sub">Open source · MIT · Audit your whole sitemap</span>
+          </span>
+        </a>
+        <a href="https://pypi.org/project/oryon-score/" target="_blank" rel="noopener" class="dl-chip">
+          <span class="dl-icon" aria-hidden="true">⬇</span>
+          <span class="dl-label">
+            <span class="dl-title">pip install oryon-score</span>
+            <span class="dl-sub">Score URLs from your terminal · CI-friendly</span>
+          </span>
+        </a>
+      </div>
     </section>
 
     <section id="result" class="result hidden" aria-live="polite"></section>
@@ -85,18 +102,18 @@
     <section class="upsell">
       <div class="upsell-inner">
         <div>
-          <div class="eyebrow"><span class="dot"></span>WANT THIS FOR YOUR WHOLE SITE?</div>
-          <h2>One page is the demo.<br/><span class="grad">Your whole site is the product.</span></h2>
-          <p>Oryon scores every URL on your site continuously, tracks where you're cited across ChatGPT, Perplexity, Gemini and Google AI — then writes the articles that get you cited.</p>
-          <a href="https://seoryon.com" class="bigcta">Start free trial →</a>
-          <p class="microcopy">3-day trial. 3 real articles on your site before any charge. Cancel in two clicks.</p>
+          <div class="eyebrow"><span class="dot"></span>THIS IS THE READINESS SCORE</div>
+          <h2>For the full picture,<br/><span class="grad">get the in-depth LLM audit.</span></h2>
+          <p>Oryon's deeper audit shows you exactly where ChatGPT, Perplexity, Gemini, and Google AI cite your competitors instead of you — then writes the articles that close the gap. 30-day free trial includes 3 published articles + 1 full LLM audit.</p>
+          <a href="https://app.seoryon.com/signup?utm_source=score-tool&utm_medium=upsell&utm_campaign=trial" class="bigcta">Start 30-day free trial →</a>
+          <p class="microcopy">3 free articles published to your site · 1 in-depth LLM audit · Fact-checked, latest models · Cancel in two clicks.</p>
         </div>
       </div>
     </section>
 
     <footer>
       <div>
-        <span class="wordmark sm">SEOryon</span> · <a href="https://github.com/SEOryon/oryon-score">Open source on GitHub</a> · <a href="https://seoryon.com">seoryon.com</a>
+        <span class="wordmark sm">SEOryon</span> · <a href="https://github.com/SEOryon/oryon-score">Open source on GitHub</a> · <a href="https://pypi.org/project/oryon-score/">PyPI</a> · <a href="https://app.seoryon.com/?utm_source=score-tool&utm_medium=footer">app.seoryon.com</a>
       </div>
       <p class="microcopy">Inspired by the structured-signal approach in citation-intelligence by AutomateLab. This tool is original work under MIT.</p>
     </footer>
