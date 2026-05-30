@@ -48,15 +48,43 @@
 
   <main>
     <section class="hero">
-      <div class="eyebrow"><span class="dot"></span>FREE · OPEN SOURCE · NO SIGNUP</div>
-      <h1>Score any URL for <span class="grad">AI search readiness</span>.</h1>
-      <p class="sub">Twenty-seven signals across schema, content format, authority, crawlability, and freshness. Inspired by Google's 2026 AI search guidance. Results in 10 seconds.</p>
+      <div class="hero-meta">
+        <span class="status-dot"></span>
+        <span class="status-text">Live · 27 signals · 5 buckets · Free forever</span>
+      </div>
+
+      <h1>Score any URL for <span class="brand-text">AI search readiness</span>.</h1>
+      <p class="sub">Twenty-seven signals across schema, content format, authority, crawlability, and freshness. Inspired by Google's 2026 AI search guidance. Results in 10 seconds — no signup, no LLM calls, no API keys.</p>
 
       <form id="scoreForm" class="urlform" autocomplete="off">
         <input id="urlInput" type="text" name="url" placeholder="example.com/blog/your-best-article" inputmode="url" autofocus aria-label="URL to score" />
         <button type="submit" id="scoreBtn">Score it →</button>
       </form>
-      <p class="microcopy">Tip: paste an article URL, not the homepage. The deeper the page, the more useful the score.</p>
+      <p class="microcopy">Paste an article URL, not the homepage. The deeper the page, the more useful the score.</p>
+
+      <!-- Product-signals row: what gets checked, dashboard-style -->
+      <div class="signals-row" aria-label="Scoring buckets">
+        <div class="signal-card">
+          <div class="signal-name">Schema &amp; structure</div>
+          <div class="signal-meta">8 signals · 30 pts</div>
+        </div>
+        <div class="signal-card">
+          <div class="signal-name">Content format</div>
+          <div class="signal-meta">5 signals · 25 pts</div>
+        </div>
+        <div class="signal-card">
+          <div class="signal-name">Authority</div>
+          <div class="signal-meta">5 signals · 20 pts</div>
+        </div>
+        <div class="signal-card">
+          <div class="signal-name">Crawlability</div>
+          <div class="signal-meta">6 signals · 15 pts</div>
+        </div>
+        <div class="signal-card">
+          <div class="signal-name">Freshness</div>
+          <div class="signal-meta">3 signals · 10 pts</div>
+        </div>
+      </div>
 
       <div class="download-row">
         <a href="https://github.com/SEOryon/oryon-score" target="_blank" rel="noopener" class="dl-chip">
@@ -84,29 +112,44 @@
         <div class="card">
           <div class="num">1</div>
           <h3>You paste a URL</h3>
-          <p>Any public page. We fetch it the same way Google's AI crawlers do.</p>
+          <p>Any public page. We fetch it the same way Google's AI crawlers do — same browser headers, same network path.</p>
         </div>
         <div class="card">
           <div class="num">2</div>
           <h3>We score 27 signals</h3>
-          <p>Schema markup, FAQ blocks, heading structure, llms.txt, robots permissions, word count, dated claims, and more.</p>
+          <p>Schema markup, FAQ blocks, heading structure, llms.txt, robots permissions, word count, dated claims, and more. No LLM calls.</p>
         </div>
         <div class="card">
           <div class="num">3</div>
           <h3>You get the fixes</h3>
-          <p>A 0–100 score plus the top 8 fixes ranked by impact. No fluff.</p>
+          <p>A 0–100 score plus the top 8 fixes ranked by impact. Each fix tells you what to change, where, and why.</p>
         </div>
       </div>
     </section>
 
+    <!-- Restrained upsell card — white-first, no full-gradient wash -->
     <section class="upsell">
-      <div class="upsell-inner">
-        <div>
-          <div class="eyebrow"><span class="dot"></span>THIS IS THE READINESS SCORE</div>
-          <h2>For the full picture,<br/><span class="grad">get the in-depth LLM audit.</span></h2>
-          <p>Oryon's deeper audit shows you exactly where ChatGPT, Perplexity, Gemini, and Google AI cite your competitors instead of you — then writes the articles that close the gap. 30-day free trial includes 3 published articles + 1 full LLM audit.</p>
+      <div class="upsell-card">
+        <div class="upsell-left">
+          <span class="oryon-tag">ORYON</span>
+          <h2>One page is the demo. <span class="brand-text">Your whole site is the product.</span></h2>
+          <p>This tool scores one URL at a time. Oryon scores every URL on your site continuously, tracks where you're cited across ChatGPT, Perplexity, Gemini, and Google AI — then writes the articles that get you cited.</p>
           <a href="https://app.seoryon.com/signup?utm_source=score-tool&utm_medium=upsell&utm_campaign=trial" class="bigcta">Start 30-day free trial →</a>
-          <p class="microcopy">3 free articles published to your site · 1 in-depth LLM audit · Fact-checked, latest models · Cancel in two clicks.</p>
+          <p class="microcopy">3 published articles · 1 in-depth LLM audit · Latest models · Cancel in two clicks.</p>
+        </div>
+        <div class="upsell-right">
+          <div class="upsell-stat">
+            <div class="upsell-stat-num">2,000+</div>
+            <div class="upsell-stat-label">ChatGPT mentions secured for clients</div>
+          </div>
+          <div class="upsell-stat">
+            <div class="upsell-stat-num">5,000+</div>
+            <div class="upsell-stat-label">Ranking articles created</div>
+          </div>
+          <div class="upsell-stat">
+            <div class="upsell-stat-num">+180%</div>
+            <div class="upsell-stat-label">Avg organic growth in 6 months</div>
+          </div>
         </div>
       </div>
     </section>
