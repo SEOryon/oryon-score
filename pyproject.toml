@@ -7,7 +7,7 @@ name = "oryon-score"
 version = "0.1.0"
 description = "Score any URL for AI search readiness. Free open-source tool by Oryon."
 readme = "README.md"
-authors = [{ name = "Amaury", email = "amaurydela6@gmail.com" }]
+authors = [{ name = "Amaury", email = "amaury@seoryon.com" }]
 license = { text = "MIT" }
 requires-python = ">=3.10"
 keywords = ["seo", "ai-search", "ai-overview", "geo", "aeo", "llm-citation", "schema", "audit"]
@@ -36,4 +36,12 @@ Issues = "https://github.com/SEOryon/oryon-score/issues"
 oryon-score = "oryon_score.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/oryon_score"]
+packages = ["oryon_score"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/oryon_score",
+  "/README.md",
+  "/LICENSE",
+  "/pyproject.toml",
+]

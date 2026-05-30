@@ -12,7 +12,7 @@ from urllib.parse import urlparse, parse_qs
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from src.score import score_url  # noqa: E402
+from oryon_score.score import score_url  # noqa: E402
 
 
 class handler(BaseHTTPRequestHandler):
