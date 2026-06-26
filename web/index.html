@@ -3,15 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Oryon AI Search Readiness Score · Free</title>
-  <meta name="description" content="Score any URL for AI search readiness. Free, open-source, no signup. Built by Oryon — your organic growth engine." />
-  <meta property="og:title" content="Oryon AI Search Readiness Score" />
-  <meta property="og:description" content="Score any URL for AI search readiness. Free, open-source, no signup." />
+  <title>Free AI search readiness score · GEO audit for any URL · SEOryon</title>
+  <meta name="description" content="Free GEO / AI-search readiness score for any URL — 27 signals across schema, content, authority, crawlability and freshness. Generative engine optimization audit, no signup, no LLM calls. By SEOryon." />
+  <meta name="keywords" content="AI search readiness, GEO, generative engine optimization, free SEO audit, free GEO audit, AI Overviews, ChatGPT citations, Perplexity, schema audit, llms.txt" />
+  <meta property="og:title" content="Free AI search readiness score · GEO audit by SEOryon" />
+  <meta property="og:description" content="Score any URL for AI search readiness — 27 signals, 5 buckets, no signup. Free GEO (generative engine optimization) audit by SEOryon." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://score.seoryon.com" />
   <meta property="og:image" content="https://score.seoryon.com/logo.png" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="canonical" href="https://score.seoryon.com" />
-  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="alternate" hreflang="en" href="https://score.seoryon.com/" />
+  <link rel="alternate" hreflang="de" href="https://score.seoryon.com/?lang=de" />
+  <link rel="alternate" hreflang="fr" href="https://score.seoryon.com/?lang=fr" />
+  <link rel="alternate" hreflang="x-default" href="https://score.seoryon.com/" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -24,7 +32,7 @@
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
       "url": "https://score.seoryon.com",
-      "description": "Free open-source tool that scores any URL for AI search readiness.",
+      "description": "Free open-source tool that scores any URL for AI search readiness across 27 GEO signals.",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
       "creator": { "@type": "Organization", "name": "SEOryon", "url": "https://seoryon.com" }
     }
@@ -36,13 +44,17 @@
       <img src="/logo.png" class="logo-img" alt="SEOryon" />
     </a>
     <nav class="navlinks">
-      <a href="https://github.com/SEOryon/oryon-score" rel="noopener" target="_blank" class="nav-secondary">
+      <a href="#learn" class="nav-secondary" data-i18n="nav_learn">What is GEO?</a>
+      <a href="#faq" class="nav-secondary" data-i18n="nav_faq">FAQ</a>
+      <a href="https://github.com/SEOryon/oryon-score" rel="noopener" target="_blank" class="nav-secondary nav-github">
         <span aria-hidden="true">★</span> GitHub
       </a>
-      <a href="https://pypi.org/project/oryon-score/" rel="noopener" target="_blank" class="nav-secondary">
-        <span aria-hidden="true">⬇</span> pip install
-      </a>
-      <a href="https://app.seoryon.com/signup?utm_source=score-tool&utm_medium=topbar&utm_campaign=trial" class="cta-link">Start free trial →</a>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="de">DE</button>
+        <button type="button" class="lang-btn" data-lang="fr">FR</button>
+      </div>
+      <a href="https://app.seoryon.com/signup?utm_source=score-tool&utm_medium=topbar&utm_campaign=trial" class="cta-link" data-i18n="cta_trial">Start free trial →</a>
     </nav>
   </header>
 
@@ -50,39 +62,39 @@
     <section class="hero">
       <div class="hero-meta">
         <span class="status-dot"></span>
-        <span class="status-text">Live · 27 signals · 5 buckets · Free forever</span>
+        <span class="status-text" data-i18n="hero_pill">Live · 27 signals · 5 buckets · Free forever</span>
       </div>
 
-      <h1>Score any URL for <span class="brand-text">AI search readiness</span>.</h1>
-      <p class="sub">Twenty-seven signals across schema, content format, authority, crawlability, and freshness. Inspired by Google's 2026 AI search guidance. Results in 10 seconds — no signup, no LLM calls, no API keys.</p>
+      <h1 data-i18n-html="hero_h1">Score any URL for <span class="brand-text">AI search readiness</span>.</h1>
+      <p class="sub" data-i18n="hero_sub">Twenty-seven signals across schema, content format, authority, crawlability, and freshness. A free GEO (generative engine optimization) audit, inspired by Google's 2026 AI-search guidance. Results in 10 seconds — no signup, no LLM calls, no API keys.</p>
 
       <form id="scoreForm" class="urlform" autocomplete="off">
         <input id="urlInput" type="text" name="url" placeholder="example.com/blog/your-best-article" inputmode="url" autofocus aria-label="URL to score" />
-        <button type="submit" id="scoreBtn">Score it →</button>
+        <button type="submit" id="scoreBtn" data-i18n="score_btn">Score it →</button>
       </form>
-      <p class="microcopy">Paste an article URL, not the homepage. The deeper the page, the more useful the score.</p>
+      <p class="microcopy" data-i18n="hero_micro">Paste an article URL, not the homepage. The deeper the page, the more useful the score.</p>
 
       <!-- Product-signals row: what gets checked, dashboard-style -->
       <div class="signals-row" aria-label="Scoring buckets">
         <div class="signal-card">
-          <div class="signal-name">Schema &amp; structure</div>
-          <div class="signal-meta">8 signals · 30 pts</div>
+          <div class="signal-name" data-i18n="b1_name">Schema &amp; structure</div>
+          <div class="signal-meta" data-i18n="b1_meta">8 signals · 30 pts</div>
         </div>
         <div class="signal-card">
-          <div class="signal-name">Content format</div>
-          <div class="signal-meta">5 signals · 25 pts</div>
+          <div class="signal-name" data-i18n="b2_name">Content format</div>
+          <div class="signal-meta" data-i18n="b2_meta">5 signals · 25 pts</div>
         </div>
         <div class="signal-card">
-          <div class="signal-name">Authority</div>
-          <div class="signal-meta">5 signals · 20 pts</div>
+          <div class="signal-name" data-i18n="b3_name">Authority</div>
+          <div class="signal-meta" data-i18n="b3_meta">5 signals · 20 pts</div>
         </div>
         <div class="signal-card">
-          <div class="signal-name">Crawlability</div>
-          <div class="signal-meta">6 signals · 15 pts</div>
+          <div class="signal-name" data-i18n="b4_name">Crawlability</div>
+          <div class="signal-meta" data-i18n="b4_meta">6 signals · 15 pts</div>
         </div>
         <div class="signal-card">
-          <div class="signal-name">Freshness</div>
-          <div class="signal-meta">3 signals · 10 pts</div>
+          <div class="signal-name" data-i18n="b5_name">Freshness</div>
+          <div class="signal-meta" data-i18n="b5_meta">3 signals · 10 pts</div>
         </div>
       </div>
 
@@ -90,15 +102,15 @@
         <a href="https://github.com/SEOryon/oryon-score" target="_blank" rel="noopener" class="dl-chip">
           <span class="dl-icon" aria-hidden="true">★</span>
           <span class="dl-label">
-            <span class="dl-title">Star on GitHub</span>
-            <span class="dl-sub">Open source · MIT · Audit your whole sitemap</span>
+            <span class="dl-title" data-i18n="dl1_title">Star on GitHub</span>
+            <span class="dl-sub" data-i18n="dl1_sub">Open source · MIT · Audit your whole sitemap</span>
           </span>
         </a>
         <a href="https://pypi.org/project/oryon-score/" target="_blank" rel="noopener" class="dl-chip">
           <span class="dl-icon" aria-hidden="true">⬇</span>
           <span class="dl-label">
             <span class="dl-title">pip install oryon-score</span>
-            <span class="dl-sub">Score URLs from your terminal · CI-friendly</span>
+            <span class="dl-sub" data-i18n="dl2_sub">Score URLs from your terminal · CI-friendly</span>
           </span>
         </a>
       </div>
@@ -107,22 +119,74 @@
     <section id="result" class="result hidden" aria-live="polite"></section>
 
     <section class="how">
-      <h2>How it works</h2>
+      <h2 data-i18n="how_h2">How it works</h2>
       <div class="grid3">
         <div class="card">
           <div class="num">1</div>
-          <h3>You paste a URL</h3>
-          <p>Any public page. We fetch it the same way Google's AI crawlers do — same browser headers, same network path.</p>
+          <h3 data-i18n="how1_h3">You paste a URL</h3>
+          <p data-i18n="how1_p">Any public page. We fetch it the same way Google's AI crawlers do — same browser headers, same network path.</p>
         </div>
         <div class="card">
           <div class="num">2</div>
-          <h3>We score 27 signals</h3>
-          <p>Schema markup, FAQ blocks, heading structure, llms.txt, robots permissions, word count, dated claims, and more. No LLM calls.</p>
+          <h3 data-i18n="how2_h3">We score 27 signals</h3>
+          <p data-i18n="how2_p">Schema markup, FAQ blocks, heading structure, llms.txt, robots permissions, word count, dated claims, and more. No LLM calls.</p>
         </div>
         <div class="card">
           <div class="num">3</div>
-          <h3>You get the fixes</h3>
-          <p>A 0–100 score plus the top 8 fixes ranked by impact. Each fix tells you what to change, where, and why.</p>
+          <h3 data-i18n="how3_h3">You get the fixes</h3>
+          <p data-i18n="how3_p">A 0–100 score plus the top 8 fixes ranked by impact. Each fix tells you what to change, where, and why.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GEO / AI-search education — substantive, useful, citable -->
+    <section class="learn" id="learn">
+      <span class="learn-kicker" data-i18n="learn_kicker">WHAT'S GEO?</span>
+      <h2 data-i18n="learn_h2">AI search is changing what "ranking" means.</h2>
+      <p class="learn-lead" data-i18n="learn_lead">A growing share of searches now end in an AI-generated answer — Google AI Overviews, ChatGPT, Perplexity, Gemini, Claude — instead of ten blue links. Those answers quote a handful of sources. GEO (generative engine optimization) is about being one of them.</p>
+
+      <div class="learn-grid">
+        <div class="learn-card">
+          <h3 data-i18n="learn_c1_h">Classic SEO ranks pages. GEO earns citations.</h3>
+          <p data-i18n="learn_c1_p">Google still ranks pages in its index. But when the answer is generated, the assistant cites the sources it used. To get traffic from AI search, your page has to be <em>quotable</em> — clear, structured, well-attributed.</p>
+        </div>
+        <div class="learn-card">
+          <h3 data-i18n="learn_c2_h">AI engines reward extractable structure.</h3>
+          <p data-i18n="learn_c2_p">Direct answers in the first 60 words. Question-style H2s. FAQPage schema. Definition lists. Real tables instead of images of tables. These aren't tricks — they're the shape AI summarizers can lift verbatim and credit you for.</p>
+        </div>
+        <div class="learn-card">
+          <h3 data-i18n="learn_c3_h">AI crawlers need permission.</h3>
+          <p data-i18n="learn_c3_p">GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and CCBot all read your robots.txt. If you block them — by accident or default — you're invisible to the answer. A simple llms.txt at your site root helps them prioritize.</p>
+        </div>
+        <div class="learn-card">
+          <h3 data-i18n="learn_c4_h">Freshness and authority still matter.</h3>
+          <p data-i18n="learn_c4_p">Assistants prefer recently updated, sourced content — dated claims, a real author byline, outbound links to .gov / .edu / Wikipedia, an exposed dateModified. The fundamentals of trustworthy writing carry over, with sharper edges.</p>
+        </div>
+      </div>
+
+      <div class="learn-buckets">
+        <p class="learn-buckets-intro" data-i18n="learn_buckets_intro">The free score on this page checks 27 signals across five buckets:</p>
+        <div class="learn-buckets-grid">
+          <div class="learn-bucket">
+            <span class="learn-bucket-name" data-i18n="b1_name">Schema &amp; structure</span>
+            <span class="learn-bucket-desc" data-i18n="learn_b1_desc">Article / FAQ / HowTo / Breadcrumb JSON-LD, heading hierarchy, definition lists, question-style H2s.</span>
+          </div>
+          <div class="learn-bucket">
+            <span class="learn-bucket-name" data-i18n="b2_name">Content format</span>
+            <span class="learn-bucket-desc" data-i18n="learn_b2_desc">Word count in the lift-worthy range, a direct answer in the first 60 words, a TL;DR block, bold key claims, real lists.</span>
+          </div>
+          <div class="learn-bucket">
+            <span class="learn-bucket-name" data-i18n="b3_name">Authority</span>
+            <span class="learn-bucket-desc" data-i18n="learn_b3_desc">Named author / byline, citations to authority domains, healthy internal/outbound link density, quotes &amp; sources.</span>
+          </div>
+          <div class="learn-bucket">
+            <span class="learn-bucket-name" data-i18n="b4_name">Crawlability</span>
+            <span class="learn-bucket-desc" data-i18n="learn_b4_desc">HTTPS, canonical, mobile viewport, Open Graph, llms.txt at site root, robots.txt that lets the major AI crawlers in.</span>
+          </div>
+          <div class="learn-bucket">
+            <span class="learn-bucket-name" data-i18n="b5_name">Freshness</span>
+            <span class="learn-bucket-desc" data-i18n="learn_b5_desc">dateModified or Last-Modified header, dated phrases in the body, year in the title where it makes sense.</span>
+          </div>
         </div>
       </div>
     </section>
@@ -132,33 +196,126 @@
       <div class="upsell-card">
         <div class="upsell-left">
           <span class="oryon-tag">ORYON</span>
-          <h2>One page is the demo. <span class="brand-text">Your whole site is the product.</span></h2>
-          <p>This tool scores one URL at a time. Oryon scores every URL on your site continuously, tracks where you're cited across ChatGPT, Perplexity, Gemini, and Google AI — then writes the articles that get you cited.</p>
-          <a href="https://app.seoryon.com/signup?utm_source=score-tool&utm_medium=upsell&utm_campaign=trial" class="bigcta">Start 30-day free trial →</a>
-          <p class="microcopy">3 published articles · 1 in-depth LLM audit · Latest models · Cancel in two clicks.</p>
+          <h2 data-i18n-html="upsell_h2">One page is the demo. <span class="brand-text">Your whole site is the product.</span></h2>
+          <p data-i18n="upsell_p">This tool scores one URL at a time. Oryon scores every URL on your site continuously, tracks where you're cited across ChatGPT, Perplexity, Gemini, and Google AI — then writes the articles that get you cited.</p>
+          <a href="https://app.seoryon.com/signup?utm_source=score-tool&utm_medium=upsell&utm_campaign=trial" class="bigcta" data-i18n="upsell_cta">Start your 3-day free trial →</a>
+          <p class="microcopy" data-i18n="upsell_fine">3-day free trial · 3 published articles · 1 in-depth LLM/GEO audit · Cancel in two clicks.</p>
         </div>
         <div class="upsell-right">
           <div class="upsell-stat">
             <div class="upsell-stat-num">2,000+</div>
-            <div class="upsell-stat-label">ChatGPT mentions secured for clients</div>
+            <div class="upsell-stat-label" data-i18n="stat1_label">ChatGPT mentions secured for clients</div>
           </div>
           <div class="upsell-stat">
             <div class="upsell-stat-num">5,000+</div>
-            <div class="upsell-stat-label">Ranking articles created</div>
+            <div class="upsell-stat-label" data-i18n="stat2_label">Ranking articles created</div>
           </div>
           <div class="upsell-stat">
             <div class="upsell-stat-num">+180%</div>
-            <div class="upsell-stat-label">Avg organic growth in 6 months</div>
+            <div class="upsell-stat-label" data-i18n="stat3_label">Avg organic growth in 6 months</div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ — comprehensive, grouped, with FAQPage JSON-LD (injected by app.js). -->
+    <section class="faq" id="faq">
+      <h2 data-i18n="faq_h2">Questions, answered</h2>
+
+      <div class="faq-group">
+        <h3 class="faq-group-title" data-i18n="faq_gA">AI search &amp; GEO basics</h3>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary data-i18n="faq1_q">What is GEO (generative engine optimization)?</summary>
+            <p data-i18n="faq1_a">GEO is optimizing to be a source AI answers cite — in ChatGPT, Perplexity, Gemini, Claude, and Google's AI Overviews — instead of only ranking in the ten blue links. More and more people ask an AI assistant instead of scrolling a results page, and the assistant quotes a handful of sources. GEO is the work of being one of them: clear structure, genuinely useful answers, the right markup, and crawler access for AI bots.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq2_q">How do I get cited in ChatGPT, Perplexity, and Google AI?</summary>
+            <p data-i18n="faq2_a">You earn citations the way you earn rankings — by being the clearest, most useful answer to a real question — but AI rewards a few extra things: well-structured content it can extract (headings, concise answers, lists, FAQ markup), demonstrated expertise and trust signals (named author, citations to authority sources), and a site that lets AI crawlers in. The free score on this page tells you exactly where you stand on the 27 signals that drive citation likelihood.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq3_q">How is ranking in AI answers different from ranking on Google?</summary>
+            <p data-i18n="faq3_a">Google ranks pages; AI answers cite sources inside a generated reply. The fundamentals overlap — quality, structure, authority — but AI rewards content that directly answers the question in the first sentences, uses lifted-able structure (lists, definitions, Q&amp;A), and exposes machine-readable markup. A page can rank well classically and still lose AI citations if it buries the answer. SEOryon optimizes for both.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq4_q">Why are AI Overviews changing SEO?</summary>
+            <p data-i18n="faq4_a">Because the assistant gives the user the answer on the results page. If you're not one of the cited sources, the click never happens. That doesn't kill SEO — it shifts the prize. The new prize is being the quotable source. The work to win it is structural (clear answers, schema, llms.txt, robots access) on top of the same content quality you'd want anyway.</p>
+          </details>
+        </div>
+      </div>
+
+      <div class="faq-group">
+        <h3 class="faq-group-title" data-i18n="faq_gB">Using the free score</h3>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary data-i18n="faq5_q">What do the 5 buckets and 27 signals mean?</summary>
+            <p data-i18n="faq5_a">The score is normalized to 100 across five buckets weighted by their influence on AI citation: schema &amp; structure (30 pts, 8 signals), content format (25 pts, 5 signals), authority (20 pts, 5 signals), crawlability (15 pts, 6 signals), freshness (10 pts, 3 signals). Each signal returns pass / partial / fail with a specific fix telling you exactly what to change.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq6_q">Why paste an article URL, not the homepage?</summary>
+            <p data-i18n="faq6_a">Homepages are navigation hubs; AI assistants rarely cite them. They cite specific, deep pages that answer a specific question — articles, guides, FAQs, comparison pages. Score the deepest, most useful page you have. The result will tell you a lot more about how citable your real content is.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq7_q">Is the score really free? No signup, no LLM calls?</summary>
+            <p data-i18n="faq7_a">Yes. The scorer is a deterministic HTML parser — it fetches your URL, reads the markup, and runs 27 rule-based checks. No LLM calls, no API keys, no account, no rate-limit gating. The code is open-source under MIT, and you can self-host it or run it from your terminal with <code>pip install oryon-score</code>.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq8_q">What's the difference between the free score and the SEOryon platform?</summary>
+            <p data-i18n="faq8_a">The free score audits one URL at a time, on demand. SEOryon (the paid platform) does it continuously across every URL on your site, tracks where you're actually being cited across ChatGPT, Perplexity, Gemini, Google AI, and Claude — and writes the articles that get you cited in the first place. The score answers "is this page citable?". SEOryon answers "what should I publish next, and where am I winning?".</p>
+          </details>
+        </div>
+      </div>
+
+      <div class="faq-group">
+        <h3 class="faq-group-title" data-i18n="faq_gC">SEOryon vs. the alternatives</h3>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary data-i18n="faq9_q">How is SEOryon different from a keyword tool or an AI writer?</summary>
+            <p data-i18n="faq9_a">Keyword tools stop at a list — they tell you what people search, then leave the hard part (deciding what's actually worth writing, and writing it) to you. AI writers do the opposite: they generate text fast, but with no grounding in live search data, so you get generic articles that don't rank. SEOryon closes the loop. A single agent reads real search signals — live SERPs, People Also Ask, keyword difficulty, competitor gaps, trends — decides which topics will actually move your traffic and why, then writes each article on that data and checks the facts. You get the research of a keyword tool and the output of a writer, connected, instead of paying for both and stitching them together yourself.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq10_q">Do I still need Ahrefs or Semrush?</summary>
+            <p data-i18n="faq10_a">For most teams, no. SEOryon already tracks the things those tools surface — your rankings, your competitors, your backlinks, and your site's technical health — but instead of stopping at a dashboard you have to act on, it acts: it turns those signals into published content that ranks. Ahrefs and Semrush are reference libraries; SEOryon is the team that reads the library and does the work. Keep them if you love the data, but you won't need them to grow.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq11_q">Why SEOryon instead of an agency or doing it manually?</summary>
+            <p data-i18n="faq11_a">An agency is expensive, slow, and you're never quite sure what you're paying for; doing SEO yourself eats hours every week on research, writing, and tracking. SEOryon runs that entire research-to-publish loop continuously, for a fraction of an agency retainer — and unlike an agency, nothing is a black box: you see every recommendation and approve every article. You get agency-scale output with full control and none of the busywork.</p>
+          </details>
+        </div>
+      </div>
+
+      <div class="faq-group">
+        <h3 class="faq-group-title" data-i18n="faq_gD">Trust &amp; how it works</h3>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary data-i18n="faq12_q">Is AI-written content penalized by Google?</summary>
+            <p data-i18n="faq12_a">No — Google rewards helpful content regardless of how it's made, and penalizes spam. SEOryon writes genuine, fact-grounded articles you review before publishing, not spun filler. The score on this page is itself rule-based: it never produces or rewrites your content, it just measures whether your existing page is structured to be cited.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq13_q">Do you follow Google's rules?</summary>
+            <p data-i18n="faq13_a">Always. No black-hat tactics, no link-exchange pools, no spun content — only the fundamentals of good SEO, because that's the only growth that lasts. The score's advice maps to the same fundamentals Google's own AI-search guidance describes.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq14_q">Does SEOryon edit my site?</summary>
+            <p data-i18n="faq14_a">No. SEOryon shows you the data and writes the content; you publish and stay in full control of your own site. We never edit your site for you. The free score is read-only — it fetches the public URL and reads the HTML, nothing more.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq15_q">Who controls what gets published?</summary>
+            <p data-i18n="faq15_a">You do. On semi-autopilot you approve every piece with one click; on full autopilot SEOryon publishes on your rules. Either way, nothing goes live without your say.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq16_q">What's included in the 3-day free trial?</summary>
+            <p data-i18n="faq16_a">A 3-day free trial of the full SEOryon platform: 3 published articles written for you and 1 in-depth LLM/GEO audit, with full access. Cancel in two clicks — no card gymnastics, no auto-renewal traps.</p>
+          </details>
         </div>
       </div>
     </section>
 
     <footer>
       <div>
-        <span class="wordmark sm">SEOryon</span> · <a href="https://github.com/SEOryon/oryon-score">Open source on GitHub</a> · <a href="https://pypi.org/project/oryon-score/">PyPI</a> · <a href="https://app.seoryon.com/?utm_source=score-tool&utm_medium=footer">app.seoryon.com</a>
+        <span class="wordmark sm">SEOryon</span> · <a href="/privacy" data-i18n="footer_privacy">Privacy</a> · <a href="https://github.com/SEOryon/oryon-score" data-i18n="footer_github">Open source on GitHub</a> · <a href="https://pypi.org/project/oryon-score/">PyPI</a> · <a href="https://app.seoryon.com/?utm_source=score-tool&utm_medium=footer">app.seoryon.com</a>
       </div>
-      <p class="microcopy">Inspired by the structured-signal approach in citation-intelligence by AutomateLab. This tool is original work under MIT.</p>
+      <p class="microcopy" data-i18n="footer_note">A free GEO audit by SEOryon — your organic growth engine. Inspired by the structured-signal approach in citation-intelligence by AutomateLab. This tool is original work under MIT.</p>
     </footer>
   </main>
 

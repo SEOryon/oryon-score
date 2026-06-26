@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://score.seoryon.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://score.seoryon.com/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://score.seoryon.com/?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://score.seoryon.com/?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://score.seoryon.com/" />
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://score.seoryon.com/privacy</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://score.seoryon.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://score.seoryon.com/privacy?lang=de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://score.seoryon.com/privacy?lang=fr" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://score.seoryon.com/privacy" />
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

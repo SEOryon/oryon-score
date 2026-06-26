@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://score.seoryon.com/sitemap.xml

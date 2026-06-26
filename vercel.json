@@ -7,7 +7,10 @@
   ],
   "routes": [
     { "src": "/api/score", "dest": "/api/score.py" },
-    { "src": "/(style.css|app.js|logo\\.png|.*\\.(png|jpg|svg|ico|webp))", "dest": "/web/$1" },
+    { "src": "/privacy/?", "dest": "/web/privacy.html" },
+    { "src": "/privacy\\.html", "dest": "/web/privacy.html" },
+    { "src": "/(style\\.css|app\\.js|privacy\\.js|robots\\.txt|sitemap\\.xml|logo\\.png|favicon\\.ico|favicon-32\\.png|apple-touch-icon\\.png|seoryon-mark\\.svg)", "dest": "/web/$1" },
+    { "src": "/(.*\\.(png|jpg|jpeg|svg|ico|webp|gif|woff2?))", "dest": "/web/$1" },
     { "src": "/(.*)", "dest": "/web/index.html" }
   ]
 }

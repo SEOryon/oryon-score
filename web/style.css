@@ -478,3 +478,214 @@ footer .wordmark.sm {
   .navlinks a.nav-secondary { padding: 6px 10px; font-size: 12.5px; }
   .navlinks a.cta-link { padding: 8px 12px; font-size: 13px; }
 }
+
+/* ============================================================
+   Language switcher — small Geist Mono segmented control in the nav
+   ============================================================ */
+.lang-switch {
+  display: inline-flex; align-items: center;
+  border: 1px solid var(--surface-border);
+  border-radius: 10px; overflow: hidden; background: var(--surface-card);
+}
+.lang-btn {
+  font-family: 'Geist Mono', monospace; font-size: 12px; font-weight: 500;
+  letter-spacing: 0.04em; color: var(--ink-muted);
+  background: transparent; border: none; cursor: pointer;
+  padding: 7px 10px; transition: background-color 0.15s, color 0.15s;
+}
+.lang-btn + .lang-btn { border-left: 1px solid var(--surface-border); }
+.lang-btn:hover { color: var(--brand-hover); background: var(--brand-tint); }
+.lang-btn.active { color: var(--ink-on-brand); background: var(--brand-primary); }
+
+@media (max-width: 860px) {
+  .nav-github { display: none; }
+}
+@media (max-width: 600px) {
+  .lang-btn { padding: 6px 8px; font-size: 11px; }
+  .navlinks a[data-i18n="nav_learn"], .navlinks a[data-i18n="nav_faq"] { display: none; }
+}
+
+/* ============================================================
+   GEO education section — adds depth without restyling the brand
+   ============================================================ */
+.learn { margin-top: 96px; max-width: 100%; }
+.learn-kicker {
+  display: inline-block;
+  font-family: 'Geist Mono', monospace; font-weight: 600; font-size: 12px;
+  letter-spacing: 0.18em; color: var(--brand-primary);
+  margin-bottom: 14px;
+}
+.learn h2 {
+  font-family: 'Geist', sans-serif; font-weight: 800; font-size: 36px;
+  letter-spacing: -0.03em; color: var(--ink-primary); margin-bottom: 16px;
+  max-width: 22ch;
+}
+.learn-lead {
+  font-size: 17px; line-height: 1.6; color: var(--ink-secondary);
+  max-width: 68ch; margin-bottom: 32px;
+}
+.learn-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+  margin-bottom: 36px;
+}
+.learn-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  padding: 22px 24px;
+}
+.learn-card h3 {
+  font-family: 'Geist', sans-serif; font-weight: 700; font-size: 17px;
+  letter-spacing: -0.02em; color: var(--ink-primary);
+  margin-bottom: 8px;
+}
+.learn-card p {
+  font-size: 14.5px; line-height: 1.6; color: var(--ink-secondary);
+}
+.learn-card p em { color: var(--brand-hover); font-style: normal; font-weight: 600; }
+
+.learn-buckets {
+  background: var(--surface-soft-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  padding: 24px 28px;
+}
+.learn-buckets-intro {
+  font-family: 'Geist', sans-serif; font-weight: 600; font-size: 14px;
+  color: var(--ink-primary); margin-bottom: 16px;
+}
+.learn-buckets-grid {
+  display: grid; grid-template-columns: 1fr; gap: 14px;
+}
+.learn-bucket {
+  display: grid; grid-template-columns: 200px 1fr; gap: 18px; align-items: baseline;
+}
+.learn-bucket-name {
+  font-family: 'Geist', sans-serif; font-weight: 600; font-size: 13.5px;
+  color: var(--brand-primary); letter-spacing: -0.01em;
+}
+.learn-bucket-desc {
+  font-size: 14px; line-height: 1.55; color: var(--ink-secondary);
+}
+
+@media (max-width: 860px) {
+  .learn-grid { grid-template-columns: 1fr; }
+  .learn-bucket { grid-template-columns: 1fr; gap: 4px; }
+  .learn-bucket-name { font-size: 13px; }
+}
+@media (max-width: 600px) {
+  .learn h2 { font-size: 28px; }
+  .learn-buckets { padding: 20px 18px; }
+}
+
+/* ============================================================
+   FAQ — accordion, with the same brand idiom (white card + indigo)
+   ============================================================ */
+.faq { margin-top: 96px; }
+.faq h2 {
+  font-family: 'Geist', sans-serif; font-weight: 800; font-size: 36px;
+  letter-spacing: -0.03em; color: var(--ink-primary); margin-bottom: 28px;
+}
+.faq-group { max-width: 820px; }
+.faq-group + .faq-group { margin-top: 30px; }
+.faq-group-title {
+  font-family: 'Geist Mono', monospace; font-weight: 600; font-size: 12px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand-primary);
+  margin-bottom: 12px;
+}
+.faq-list { display: grid; gap: 10px; max-width: 820px; }
+.faq-item {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 4px 20px;
+}
+.faq-item summary {
+  list-style: none; cursor: pointer;
+  font-family: 'Geist', sans-serif; font-weight: 600; font-size: 16px;
+  color: var(--ink-primary);
+  padding: 16px 0; position: relative; padding-right: 28px;
+  transition: color 0.15s;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary:hover { color: var(--brand-hover); }
+.faq-item summary::after {
+  content: "+"; position: absolute; right: 0; top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Geist Mono', monospace; font-size: 20px; font-weight: 500;
+  color: var(--brand-primary); transition: transform 0.2s;
+}
+.faq-item[open] summary::after { content: "–"; }
+.faq-item p {
+  font-size: 15px; line-height: 1.6; color: var(--ink-secondary);
+  padding: 0 0 18px; max-width: 70ch;
+}
+.faq-item p code {
+  font-family: 'Geist Mono', monospace; font-size: 13px;
+  background: var(--brand-tint); color: var(--brand-hover);
+  padding: 1px 6px; border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+  .faq h2 { font-size: 28px; }
+  .faq-item { padding: 2px 16px; }
+  .faq-item summary { font-size: 15px; }
+}
+
+/* ============================================================
+   Legal / privacy page (reuses tokens & fonts; not a restyle)
+   ============================================================ */
+.legal { padding: 48px 0 8px; max-width: 760px; }
+.legal h1 {
+  font-family: 'Geist', sans-serif; font-weight: 800;
+  font-size: clamp(32px, 4.4vw, 44px); line-height: 1.06; letter-spacing: -0.035em;
+  color: var(--ink-primary); margin-bottom: 12px;
+}
+.legal-updated {
+  font-family: 'Geist Mono', monospace; font-size: 12.5px; letter-spacing: 0.02em;
+  color: var(--ink-muted); margin-bottom: 24px;
+}
+.legal-lead {
+  font-size: 18px; line-height: 1.6; color: var(--ink-secondary);
+  max-width: 64ch; margin-bottom: 8px;
+}
+.legal-section { margin-top: 40px; }
+.legal-section > h2 {
+  font-family: 'Geist', sans-serif; font-weight: 700; font-size: 22px;
+  letter-spacing: -0.025em; color: var(--ink-primary); margin-bottom: 12px;
+}
+.legal-section > h3 {
+  font-family: 'Geist', sans-serif; font-weight: 600; font-size: 16px;
+  letter-spacing: -0.01em; color: var(--ink-primary); margin: 20px 0 6px;
+}
+.legal-section p {
+  font-size: 15.5px; line-height: 1.62; color: var(--ink-secondary);
+  max-width: 70ch; margin-bottom: 12px;
+}
+.legal-section p a { color: var(--brand-hover); font-weight: 500; }
+.legal-section p code {
+  font-family: 'Geist Mono', monospace; font-size: 13px;
+  background: var(--brand-tint); color: var(--brand-hover);
+  padding: 1px 6px; border-radius: 4px;
+}
+.legal-lead-strong {
+  font-size: 16px; font-weight: 600; color: var(--ink-primary);
+  background: var(--brand-tint); border: 1px solid var(--brand-light);
+  border-radius: 12px; padding: 14px 18px; margin: 4px 0 8px; max-width: 70ch;
+}
+.legal-list { list-style: none; margin: 6px 0 4px; padding: 0; display: grid; gap: 10px; max-width: 70ch; }
+.legal-list li {
+  position: relative; padding-left: 26px;
+  font-size: 15.5px; line-height: 1.55; color: var(--ink-secondary);
+}
+.legal-list li::before {
+  content: "✓"; position: absolute; left: 0; top: 1px;
+  width: 17px; height: 17px; border-radius: 5px;
+  background: var(--brand-tint); color: var(--brand-primary);
+  font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.legal-contact {
+  margin-top: 8px; font-size: 15.5px; line-height: 1.6; color: var(--ink-secondary);
+}
+.legal-contact a { color: var(--brand-hover); font-weight: 600; }

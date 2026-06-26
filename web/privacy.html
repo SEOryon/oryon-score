@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy — Oryon AI Search Readiness Score by SEOryon</title>
+  <meta name="description" content="How the free score.seoryon.com tool, the /api/score backend, and the oryon-score pip package handle your data. Plain English, no boilerplate." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="Privacy Policy — Oryon AI Search Readiness Score" />
+  <meta property="og:description" content="How score.seoryon.com handles your data. Honest about the backend and what we don't run." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://score.seoryon.com/privacy" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="canonical" href="https://score.seoryon.com/privacy" />
+  <link rel="alternate" hreflang="en" href="https://score.seoryon.com/privacy" />
+  <link rel="alternate" hreflang="de" href="https://score.seoryon.com/privacy?lang=de" />
+  <link rel="alternate" hreflang="fr" href="https://score.seoryon.com/privacy?lang=fr" />
+  <link rel="alternate" hreflang="x-default" href="https://score.seoryon.com/privacy" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a href="https://app.seoryon.com/?utm_source=score-tool&utm_medium=brand" class="brand" aria-label="SEOryon">
+      <img src="/logo.png" class="logo-img" alt="SEOryon" />
+    </a>
+    <nav class="navlinks">
+      <a href="/" class="nav-secondary" data-i18n="pp_back">← Back to Score</a>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="de">DE</button>
+        <button type="button" class="lang-btn" data-lang="fr">FR</button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <article class="legal">
+      <h1 data-i18n="pp_h1">Privacy Policy</h1>
+      <p class="legal-updated" data-i18n="pp_updated">Last updated: 26 June 2026</p>
+      <p class="legal-lead" data-i18n="pp_intro">This policy covers the free scoring tool at score.seoryon.com, the /api/score backend that powers it, and the open-source oryon-score Python package. All three are made by SEOryon. Short version: there is no account, no tracking, no analytics — but the scorer does have a small server-side component, and we want to be specific about what it sees.</p>
+
+      <section class="legal-section">
+        <h2 data-i18n="pp_s1_title">What this site does, step by step</h2>
+        <p class="legal-lead-strong" data-i18n="pp_s1_lead">The score has a backend. We're naming it explicitly because most “100% local” privacy claims wouldn't apply here.</p>
+        <ul class="legal-list">
+          <li data-i18n="pp_s1_b1">You paste a URL on score.seoryon.com. Your browser calls our serverless endpoint at /api/score with that URL as a query parameter.</li>
+          <li data-i18n="pp_s1_b2">The backend fetches that URL once, exactly as a browser would, and runs 27 rule-based checks on the HTML it receives. No LLMs, no third-party APIs, no enrichment services.</li>
+          <li data-i18n="pp_s1_b3">The score, signal results, and fixes are returned to your browser as JSON and rendered on the page. The fetch and the result are not written to a database or kept on disk.</li>
+          <li data-i18n="pp_s1_b4">There is no account, no login, no user profile, no usage quota, and no cookie set by score.seoryon.com.</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2 data-i18n="pp_s2_title">The /api/score backend</h2>
+        <p data-i18n="pp_s2_p1">The endpoint is a stateless Python function running on Vercel's serverless runtime. For each request it:</p>
+        <ul class="legal-list">
+          <li data-i18n="pp_s2_b1">Reads the URL you submitted from the query string.</li>
+          <li data-i18n="pp_s2_b2">Performs HTTP GET requests to that URL (and to its /robots.txt and /llms.txt at the same host) with a labeled User-Agent containing “OryonAISearchScore”.</li>
+          <li data-i18n="pp_s2_b3">Parses the HTML in memory, computes the score, and returns JSON.</li>
+          <li data-i18n="pp_s2_b4">Does not store the submitted URL, the fetched HTML, the computed score, your IP, or any identifier in a database we operate.</li>
+        </ul>
+        <p data-i18n="pp_s2_p2">Like any web host, our serverless provider (Vercel) keeps standard, short-lived request logs — including IP address, request time, the path called, and User-Agent — to run the service and protect it from abuse. We do not use those logs to track, profile, or contact you. A short-lived edge cache may also remember a recent score for the same URL to keep the tool fast.</p>
+        <p data-i18n="pp_s2_p3">A practical note: the URL you submit becomes part of a request that crosses the public internet. Don't paste URLs you consider confidential (e.g. preview links protected only by obscurity). The backend will then fetch that URL itself, which means the target site sees a request from our server identifying itself as OryonAISearchScore.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2 data-i18n="pp_s3_title">This website (score.seoryon.com)</h2>
+        <p data-i18n="pp_s3_lead">This is a static page hosted on Vercel.</p>
+        <ul class="legal-list">
+          <li data-i18n="pp_s3_b1">We do not run Google Analytics, Tag Manager, Meta Pixel, or any third-party analytics or advertising script on this page. We do not set marketing or tracking cookies. We do not fingerprint visitors.</li>
+          <li data-i18n="pp_s3_b2">Your language preference (English, German, French) is saved in your own browser's localStorage so the site remembers it between visits. This preference never leaves your device.</li>
+          <li data-i18n="pp_s3_b3">The page loads Geist, Geist Mono, and Plus Jakarta Sans from Google Fonts. Google may receive standard request metadata (IP, browser) as part of serving those fonts; we do not control that and do not use it.</li>
+          <li data-i18n="pp_s3_b4">Outbound links to app.seoryon.com, seoryon.com, github.com, and pypi.org take you to separate properties with their own privacy terms.</li>
+        </ul>
+      </section>
+
+      <section class="legal-section">
+        <h2 data-i18n="pp_s4_title">The oryon-score pip package</h2>
+        <p data-i18n="pp_s4_p">The same scoring logic ships as an open-source Python package (<code>pip install oryon-score</code>). When you run it locally, the package fetches the URL you give it directly from your machine — nothing is sent to SEOryon, and we never see what you scored. The code is auditable on GitHub under MIT.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2 data-i18n="pp_s5_title">If you create a SEOryon account</h2>
+        <p data-i18n="pp_s5_p">This page covers the free score tool, its backend, and the open-source package only. The paid SEOryon platform at app.seoryon.com is a separate product with its own account, data handling, and privacy terms. Creating an account there is entirely optional and never required to use the score.</p>
+      </section>
+
+      <section class="legal-section">
+        <h2 data-i18n="pp_s6_title">Your data &amp; contact</h2>
+        <p data-i18n="pp_s6_p">Because the score backend stores nothing about you in a database we operate, there is no personal account data for us to hold, export, or delete. If you have any question about privacy — or anything you'd like clarified — reach out and we'll gladly help.</p>
+        <p class="legal-contact">
+          <span data-i18n="pp_s6_contact_label">Contact:</span>
+          <a class="js-contact" href="mailto:support@seoryon.com">support@seoryon.com</a>
+          <span>·</span>
+          <a href="https://seoryon.com">seoryon.com</a>
+        </p>
+      </section>
+
+      <section class="legal-section">
+        <h2 data-i18n="pp_s7_title">Changes to this policy</h2>
+        <p data-i18n="pp_s7_p">If anything here changes — for example, if we ever decide to add lightweight, privacy-respecting analytics, or to keep scoring results for product research — we will update this page and the “last updated” date above before the change goes live. The history is visible in the open-source repository.</p>
+      </section>
+    </article>
+
+    <footer>
+      <div>
+        <span class="wordmark sm">SEOryon</span> · <a href="/" data-i18n="pp_back_short">Score</a> · <a href="https://github.com/SEOryon/oryon-score">GitHub</a> · <a href="https://pypi.org/project/oryon-score/">PyPI</a> · <a href="https://app.seoryon.com/?utm_source=score-tool&utm_medium=footer">app.seoryon.com</a>
+      </div>
+      <p class="microcopy" data-i18n="pp_footer_note">A free GEO audit by SEOryon — your organic growth engine.</p>
+    </footer>
+  </main>
+
+  <script src="/privacy.js" defer></script>
+</body>
+</html>
