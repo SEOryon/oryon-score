@@ -198,6 +198,72 @@ guard** — don't disable it without re-reading §3.1.
 
 ---
 
+## Rate limiting (hosted `/api/score`)
+
+The hosted endpoint at `score.seoryon.com/api/score` is rate-limited per IP
+to protect against abuse:
+
+| Window     | Cap                        |
+|------------|----------------------------|
+| Per minute | **20 requests / IP / min** |
+| Per day    | **200 requests / IP / day** |
+
+Either threshold returns **HTTP 429** with a friendly JSON message and a
+`Retry-After` header (seconds until the next request from that IP could
+succeed). A normal user evaluating the tool — or an agency auditing a whole
+site in one sitting — will not hit these.
+
+State lives in [Upstash Redis](https://upstash.com/) via its REST API
+(cross-instance — every Vercel cold-start sees the same counters). The
+critical-section is an atomic `INCR` so concurrent requests cannot race past
+the cap. Reads are best-effort: if Upstash is unreachable, the endpoint
+**fails OPEN** (serves the request, logs the error) — availability over
+strict limiting for a free public tool. The SSRF guard still applies, so
+the dangerous path is protected regardless.
+
+### Activating rate limiting on your own deployment
+
+The limiter is **off** until two env vars are present. Until then, every
+request passes through and the function logs one warning at startup. To
+turn it on:
+
+1. **Create an Upstash Redis database** at [console.upstash.com](https://console.upstash.com/). The free tier is enough for low-volume use; if you expect non-trivial traffic, upgrade to Pay-As-You-Go ($0.20 per 100K commands). The rate limiter sends 4 commands per scored request — heavy traffic can drain the free tier's daily quota, which the limiter treats as an abuse signal (see "Quota burn" below).
+2. From the database's **REST API** tab, copy:
+   - `UPSTASH_REDIS_REST_URL`  (looks like `https://us1-foo-12345.upstash.io`)
+   - `UPSTASH_REDIS_REST_TOKEN` (long opaque string)
+3. In **Vercel → Project → Settings → Environment Variables**, add both for the **Production** environment (and **Preview** / **Development** if you want the same limits there). Mark the token as a Secret.
+4. Optional overrides — set if you want different caps without a code change:
+   - `RATE_LIMIT_PER_MINUTE` (default `20`)
+   - `RATE_LIMIT_PER_DAY` (default `200`)
+5. **Redeploy** the project (Vercel applies env-var changes on the next deploy). The next cold start picks up the new variables and the limiter activates automatically.
+
+Verify it's on by sending 21 requests in under a minute from the same IP —
+the 21st should return 429.
+
+### Quota burn (why fail-CLOSED on Upstash 429/403)
+
+Each scored request sends 4 commands to Upstash. An attacker can intentionally
+drain the daily Upstash quota (free-tier: 10K commands/day) and rely on the
+"store-error" path silently switching the limiter OFF. The limiter prevents
+this by treating Upstash's own `429` or `403` responses as an abuse signal:
+when Upstash is rate-limiting us, the endpoint **fails CLOSED** (returns 429
+to every user) instead of failing OPEN. You'll notice immediately because
+every request 429s; the fix is to raise the Upstash quota (upgrade the plan
+or rotate to a larger DB) — an attacker that paid for proxy traffic to burn
+the quota gets no bypass for their trouble.
+
+Transient errors (timeout, 5xx, bad token, JSON parse error) still fail-OPEN,
+so a real outage doesn't take the tool down.
+
+### CLI users
+
+The `oryon-score` CLI calls `score_url()` **directly on your own machine** —
+it does NOT go through `/api/score`. CLI users are therefore not rate-
+limited by the hosted endpoint; they are limited only by their own
+machine's network and CPU.
+
+---
+
 ## Inspired by
 
 This tool's structured-signal approach was inspired by [`citation-intelligence`](https://github.com/AutomateLab-tech/citation-intelligence) by AutomateLab — a self-hosted MCP server for measuring LLM citation visibility. Go check it out if you want programmatic citation data from inside Claude Code or Cursor. This tool solves a different layer (page readiness, not live citation queries) and is original work.

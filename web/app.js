@@ -506,6 +506,12 @@
     out.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const formatRetry = (secs) => {
+    if (secs < 60) return `${secs}s`;
+    if (secs < 3600) return `${Math.ceil(secs / 60)} min`;
+    return `${Math.ceil(secs / 3600)} h`;
+  };
+
   const run = async (url) => {
     const dict = I18N[currentLang] || I18N.en;
     btn.disabled = true;
@@ -516,7 +522,14 @@
       const resp = await fetch(`/api/score?url=${encodeURIComponent(url)}`);
       const data = await resp.json();
       if (!resp.ok || data.error) {
-        renderError(data.error || `HTTP ${resp.status}`);
+        let msg = data.error || `HTTP ${resp.status}`;
+        if (resp.status === 429) {
+          const retry = parseInt(resp.headers.get("Retry-After") || "", 10);
+          if (Number.isFinite(retry) && retry > 0) {
+            msg += ` (try again in ${formatRetry(retry)})`;
+          }
+        }
+        renderError(msg);
       } else {
         renderResult(data);
       }

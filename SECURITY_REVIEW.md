@@ -14,7 +14,7 @@
 |---|---|
 | Secrets in the repo | **Clean.** No tokens, API keys, `.env`, or credentials committed. |
 | Static page / client JS | **Clean after this commit.** No third-party trackers, no inline scripts, and all dynamic strings rendered via `escapeHtml` except controlled-source `data-i18n-html` slots. |
-| `/api/score` backend | **SSRF: RESOLVED** (§3.1, now closed end-to-end in `oryon_score/score.py` and shipped as `oryon-score` 0.2.0). Two MEDIUM findings remain: rate limiting is **scheduled as a dedicated next pass** with proper cross-instance infra (Upstash / Vercel KV) — deliberately not done in-memory because a per-cold-start in-memory limiter gives illusory protection. CORS is **kept open by design** (CLI `--api` mode + external integrators rely on it). |
+| `/api/score` backend | **SSRF: RESOLVED** (§3.1, `oryon-score` 0.2.0). **Rate limiting: RESOLVED** (§3.2 — Upstash REST, atomic INCR, 20/min + 200/day per IP, fail-safe when env vars unset, fail-open on store error). CORS **kept open by design** (CLI + external integrators rely on it). |
 | `oryon-score` pip package | **Clean.** Mainstream dependencies, no obfuscation, no surprising network calls. Does what the README claims. |
 | "Genuinely free" claim | **Holds.** No LLM calls, no API keys required, no upsell-gating in the open path. |
 
@@ -108,20 +108,52 @@ Tested in `tests/test_ssrf.py::TestDnsRebinding` with a deliberately-flipping fa
 
 **Out of scope but worth flagging:** the same SSRF guard now also protects the **pip CLI**. A user running `oryon-score` locally still cannot use it to probe their own internal network — which protects anyone who later wraps the package behind a "scoring-as-a-service" without realising they'd inherit the SSRF.
 
-### 3.2 No application-level rate limiting — **MEDIUM · SCHEDULED NEXT (deliberate separate pass)**
+### 3.2 Rate limiting — ✅ **RESOLVED 2026-06-26 (best-effort / fail-open by design)**
 
-`api/score.py` has no per-IP / per-minute limit. Vercel's platform offers DDoS protection but nothing per-key. Anyone can run sustained scoring loops today. With the SSRF guard now closed (§3.1) the worst-case damage is Vercel compute cost, not data exposure — which lowers the urgency without eliminating it.
+**What was shipped.** Cross-instance per-IP rate limiting on `/api/score`, backed by Upstash Redis via its REST API. The limit code lives in `oryon_score/rate_limit.py` and is called from `api/score.py`'s `do_GET` **before** any URL fetching or scoring work, so an abuser can't drive Vercel compute even with malformed inputs.
 
-**This is being handled as a SEPARATE dedicated pass — not silently deferred.** The reason it wasn't bundled with the SSRF fix:
+| Property | Value |
+|---|---|
+| Per-minute cap | **20 req / IP / min** (tunable via `RATE_LIMIT_PER_MINUTE`) |
+| Per-day cap | **200 req / IP / day** (tunable via `RATE_LIMIT_PER_DAY`) |
+| Trigger | EITHER threshold exceeded |
+| Response | HTTP 429 + `Retry-After` header + JSON `{"error": "You've hit the rate limit — please wait a moment before scoring more pages."}` |
+| Frontend | `web/app.js` parses `Retry-After` and appends `(try again in Ns / N min / N h)` to the inline error |
+| IP source | `X-Forwarded-For` leftmost (Vercel-trusted), fall back to `X-Real-IP` |
+| Store | Upstash Redis REST `/pipeline` — 4 commands batched into ONE network round-trip |
+| Atomicity | Redis `INCR` is atomic; the decision is made from the `INCR` return value alone (no read-then-write); concurrent requests cannot race past the cap |
+| Window keys | `rl:min:{ip}:{floor(now/60)}` TTL 60s, `rl:day:{ip}:{floor(now/86400)}` TTL 86400s — UTC, fixed window |
+| TTL set on first touch | `EXPIRE … NX` flag — subsequent INCRs in the same window don't extend the lifetime |
 
-- A per-cold-start **in-memory** token bucket in a serverless function gives **illusory** protection: each function instance has its own counter, so a moderately popular `IP_HASH` lands on many instances and the effective rate limit is `n_instances × declared_limit`. That's not "rate limiting" — that's theater.
-- Correct rate limiting needs **cross-instance state**: either Upstash Redis (`@upstash/ratelimit`), Vercel KV, or Vercel Edge Config. That's a small infrastructure addition that deserves its own review (latency budget against the 8 s function ceiling, fallback behavior on the rate-limit store being unreachable, how aggressive to be for the CLI's `--api` mode which legitimately fires bursts).
+**Three failure modes — each explicitly documented.**
 
-**Scheduled approach for the next pass:**
-1. Add Upstash Redis as a Vercel integration (free tier covers tens of thousands of requests/day).
-2. `@upstash/ratelimit` sliding window, ~30 req/min per IP, 90 req/min per IP burst.
-3. Fail-OPEN on Upstash unreachable (don't take down the free public tool when the rate-limit store has an outage — log + degrade).
-4. Returns HTTP 429 with `Retry-After`.
+1. **Fail-SAFE when env vars are unset.** If `UPSTASH_REDIS_REST_URL` or `UPSTASH_REDIS_REST_TOKEN` is missing, the limiter logs ONE startup warning and lets every request through. This is what lets the code ship **before** the Upstash store is provisioned without breaking the live tool. Once both env vars are set on Vercel and the function redeploys, limiting activates automatically with no further code change.
+2. **Fail-OPEN on TRANSIENT Upstash error.** Network timeout (> 1.5 s), connect error, Upstash 5xx, Upstash 401 (bad token), Upstash 404 (wrong path), malformed JSON, non-integer INCR result → log + serve the request. A free public scoring tool should not become unavailable because the rate-limit store had a brief outage. The SSRF guard from §3.1 still protects the dangerous path. **This is best-effort, not a hard guarantee** — during a real Upstash outage an attacker could spam unthrottled until the store recovers.
+3. **Fail-CLOSED on Upstash QUOTA / ABUSE signals.** Upstash returning HTTP `429` (rate-limit) or `403` (forbidden) is treated as an **enforcement event**, not a transient error. The most likely cause is a **quota-burn attack**: an attacker intentionally drained our Upstash account's daily-command quota with cheap proxy traffic so the limiter would silently switch off (the original design's bug, caught by the Phase-7 Codex review on this change). With the fix, every request during quota exhaustion returns HTTP 429 with a 60-second Retry-After. Admins notice immediately (every user gets 429) and can raise the Upstash plan or rotate to a larger DB; an attacker paying for proxy traffic to burn the quota gets no bypass for their trouble.
+
+**Test coverage.** `tests/test_rate_limit.py` — 40 cases:
+
+- IP extraction: XFF leftmost, whitespace, chain handling, IPv6, invalid-leftmost fallback to X-Real-IP, missing-both-headers, `1.2.3.4:port` rejection.
+- Fail-safe: env unset → allowed + enforced=False; URL-only / token-only env → also fail-safe; the "rate limiting disabled" warning is printed exactly once across N calls.
+- Under cap: 1st request enforced+allowed; 20th request (at cap) still allowed; 200th day request (at cap) still allowed.
+- Over cap: 21st minute request blocked with 1 ≤ Retry-After ≤ 60; 201st day request blocked with Retry-After > 60 ≤ 86400; both-exceeded picks the longer wait.
+- IP independence: two IPs land on two different Redis keys; same IP within the same minute lands on the same key.
+- **Race safety:** monotonic-INCR test feeds the limiter 1, 2, …, 30 (the exact semantics of Redis's atomic INCR under concurrent requests) — requests 1–20 pass and 21–30 block, with no read-then-write step in between.
+- Fail-open (transient): timeout, connect-error, 5xx, 401, 404, arbitrary exception, bad response shape, short response, non-integer INCR — every variant allowed with enforced=False.
+- **Quota-burn fail-CLOSED:** Upstash 429 → user gets 429; Upstash 403 → user gets 429; under sustained quota-burn 100 successive calls all blocked (no fail-OPEN slip-through).
+- Pipeline shape: exactly 4 commands, correct order, EXPIRE uses NX, TTLs are 60 and 86400, keys are bucketed by IP + bucket index.
+
+**Honest residuals.**
+
+- **Best-effort, not a hard guarantee.** During an Upstash outage the limit pauses (fail-open). With the SSRF guard still active the worst-case damage is Vercel compute spend — recoverable, monitorable, not data exposure.
+- **IP-pool evasion.** A determined attacker using a residential proxy pool can rotate IPs and stay under the per-IP cap. This is true of every IP-based rate limiter and is the expected trade-off; the cap is a bot ceiling, not a paywall. If real abuse via IP rotation ever appears, the next step would be a behavioral / fingerprint-based check, not a tighter per-IP cap.
+- **Fixed-window burst at boundary.** A user can do 20 requests in the last second of minute N and 20 more in the first second of minute N+1 = 40 in 2 seconds. Acceptable for the bot-ceiling threat model; sliding window would add complexity and an extra round-trip.
+
+**Disabled paths confirmed safe.** With env vars unset (fail-safe path):
+- `enforced=False` returned on every call — verified by test.
+- No Upstash network call is made — verified by `_config()` returning `None` before any HTTP work.
+- Frontend behavior unchanged — no 429s ever fired.
+- The one-time warning makes the disabled state visible in Vercel logs (it doesn't silently sit off forever).
 
 ### 3.3 Permissive CORS — **MEDIUM · KEPT OPEN BY DESIGN**
 
@@ -195,14 +227,20 @@ except Exception as exc:  # last-resort safety net
 
 ## What the second pass applied (SSRF — with founder approval)
 
-6. **Closed §3.1 (SSRF) at the shared `_fetch()` chokepoint** in `oryon_score/score.py`. Defense in depth: scheme allowlist + hostname blocklist + DNS-resolved IP range check + IPv4-mapped IPv6 unwrap + redirect re-validation via `event_hooks`. Fail-CLOSED on any error.
-7. **Added `tests/test_ssrf.py`** — 71 cases, both directions including the public→302→internal redirect bypass.
+6. **Closed §3.1 (SSRF) at the shared `_fetch()` chokepoint** in `oryon_score/score.py`. Defense in depth: scheme allowlist + hostname blocklist + DNS-resolved IP range check + IPv4-mapped IPv6 unwrap + redirect re-validation via `event_hooks` + DNS-rebind TOCTOU mitigation via module-level `socket.getaddrinfo` monkey-patch gated by a thread-local pin map. Fail-CLOSED on any error.
+7. **Added `tests/test_ssrf.py`** — 75 cases, both directions including the public→302→internal redirect bypass and the DNS-rebind TOCTOU.
 8. **Bumped `oryon-score` to 0.2.0** and rebuilt the wheel (`dist/oryon_score-0.2.0-py3-none-any.whl`). PyPI upload is the founder's to run.
 
-## What is still deliberately deferred
+## What the third pass applied (rate limiting — with founder approval)
 
-- **Rate limiting (§3.2): SCHEDULED NEXT** as a dedicated pass with Upstash / Vercel KV (the only way to get correct cross-instance limits in a serverless function). Listed in this file rather than dropped.
-- **CORS (§3.3): kept open by design** (CLI `--api` mode and external integrators rely on it). With SSRF closed, the previous abuse vector no longer applies.
+9. **Closed §3.2 (rate limiting)** in a new module `oryon_score/rate_limit.py`, called from `api/score.py` BEFORE any URL fetching or scoring work. Cross-instance via Upstash Redis REST API. Atomic INCR + EXPIRE NX for both windows in a single `/pipeline` round-trip. Fail-SAFE when env vars are unset (so the limiter can ship before Upstash is provisioned). Fail-OPEN on Upstash error (availability over strict limiting — best-effort, documented).
+10. **Added `tests/test_rate_limit.py`** — 34 cases including the atomic-race property (monotonic-INCR feed proves requests 1–20 pass and 21+ block with no read-then-write).
+11. **Frontend `web/app.js`** — 429s now render inline using the existing error UI plus the `Retry-After` value formatted as "try again in Ns / N min / N h".
+12. **README.md** — exact env var names + step-by-step Upstash setup checklist.
+
+## What is still deliberately not changed
+
+- **CORS (§3.3): kept open by design.** The CLI's `--api` mode (if anyone adds it later) and external integrators rely on the open CORS. With SSRF closed (§3.1) and rate limiting in place (§3.2), the cross-origin abuse vector is bounded.
 - **Error response shape (§3.4)**, **CSP headers (§2)**, **`pip-audit` in CI**: low-impact follow-ups, not blocking anything.
 
 ---
@@ -210,8 +248,9 @@ except Exception as exc:  # last-resort safety net
 ## Recommended next steps (in order of impact)
 
 1. ~~**Approve the SSRF fix** (§3.1)~~ — ✅ shipped 2026-06-26 as `oryon-score` 0.2.0 + deployed backend.
-2. **Republish `oryon-score` 0.2.0 to PyPI** (`twine upload dist/oryon_score-0.2.0*`) so CLI users inherit the protection.
-3. **Add the rate limit** (§3.2): Upstash integration → `@upstash/ratelimit` → 30 req/min/IP sliding window → 429 with `Retry-After`. Fail-OPEN on Upstash unreachable.
-4. **Tighten error response** (§3.4): generic 500 to the client, full exception in Vercel logs.
-5. **Add CSP + security headers** to `vercel.json` (§2). Low risk, free win.
-6. (Optional) **Add `pip-audit` to CI** so dependency CVEs surface automatically.
+2. ~~**Add the rate limit** (§3.2)~~ — ✅ shipped 2026-06-26, ACTIVATES the moment the founder sets `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` in Vercel.
+3. **Republish `oryon-score` 0.2.0 to PyPI** (`twine upload dist/oryon_score-0.2.0*`) so CLI users inherit the SSRF protection.
+4. **Provision Upstash + set env vars** (see README "Activating rate limiting on your own deployment"). Until this is done, the limiter ships in fail-safe mode and the Vercel log shows the one-time "DISABLED" warning.
+5. **Tighten error response** (§3.4): generic 500 to the client, full exception in Vercel logs.
+6. **Add CSP + security headers** to `vercel.json` (§2). Low risk, free win.
+7. (Optional) **Add `pip-audit` to CI** so dependency CVEs surface automatically.
