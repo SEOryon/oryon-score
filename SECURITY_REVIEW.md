@@ -1,9 +1,10 @@
 # Security Review — oryon-ai-search-score / score.seoryon.com
 
 **Date:** 2026-06-26
+**Last updated:** 2026-06-26 (SSRF closed — §3.1 RESOLVED)
 **Scope:** the static landing page (`web/`), the Vercel serverless backend (`api/score.py`), the published pip package (`oryon_score/`), and the GitHub repository.
-**Methodology:** repo-wide grep for secrets and dangerous patterns; static review of every entry point; live probes of `/api/score` against safe SSRF canary targets; dependency review.
-**Ground rule applied:** safe fixes (static page, client JS, repo hygiene) were applied in this commit. Anything that changes live `/api/score` behavior or the published `oryon-score` PyPI package is **flagged for founder approval only — no live backend or package changes were made**.
+**Methodology:** repo-wide grep for secrets and dangerous patterns; static review of every entry point; live probes of `/api/score` against safe SSRF canary targets; dependency review; pytest both-direction test suite for the SSRF guard.
+**Ground rule applied:** safe fixes (static page, client JS, repo hygiene) were applied in the first pass. The SSRF fix (§3.1) was implemented in a dedicated second pass — with founder approval — and is now live.
 
 ---
 
@@ -13,7 +14,7 @@
 |---|---|
 | Secrets in the repo | **Clean.** No tokens, API keys, `.env`, or credentials committed. |
 | Static page / client JS | **Clean after this commit.** No third-party trackers, no inline scripts, and all dynamic strings rendered via `escapeHtml` except controlled-source `data-i18n-html` slots. |
-| `/api/score` backend | **One high-severity SSRF finding** — flagged for approval, **not** patched here. Two medium findings (no app-level rate limiting, permissive CORS). |
+| `/api/score` backend | **SSRF: RESOLVED** (§3.1, now closed end-to-end in `oryon_score/score.py` and shipped as `oryon-score` 0.2.0). Two MEDIUM findings remain: rate limiting is **scheduled as a dedicated next pass** with proper cross-instance infra (Upstash / Vercel KV) — deliberately not done in-memory because a per-cold-start in-memory limiter gives illusory protection. CORS is **kept open by design** (CLI `--api` mode + external integrators rely on it). |
 | `oryon-score` pip package | **Clean.** Mainstream dependencies, no obfuscation, no surprising network calls. Does what the README claims. |
 | "Genuinely free" claim | **Holds.** No LLM calls, no API keys required, no upsell-gating in the open path. |
 
@@ -62,41 +63,75 @@
 
 The backend is live, callable by real users (web UI, pip CLI users in `--api` mode, and any external integrator). All findings here are **reported only**, not fixed.
 
-### 3.1 SSRF — server-side request forgery — **HIGH**
+### 3.1 SSRF — server-side request forgery — ✅ **RESOLVED 2026-06-26**
 
-**The risk.** The endpoint accepts a user-supplied URL and the server fetches it with `httpx` (`api/score.py` → `oryon_score/score.py` → `_fetch()`). There is no allowlist, no IP-range block, no DNS-rebinding protection, and `_norm_url` only enforces the `http://` or `https://` scheme prefix — it does not block private/internal/link-local targets.
+**What was shipped.** Defense-in-depth SSRF guard added to `oryon_score/score.py` at the single shared `_fetch()` chokepoint:
 
-**Live evidence.** Probed `https://score.seoryon.com/api/score?url=…` against canary targets:
+1. **Scheme allowlist** — only `http` and `https` survive validation. `file://`, `ftp://`, `gopher://`, `data:`, `javascript:`, schemeless `//host` are all refused.
+2. **Hostname blocklist** — exact-match: `localhost`, `metadata`, `metadata.google.internal`, `metadata.aws`, `instance-data`, `ip6-localhost`, `ip6-loopback`. Suffix-match: `.internal`, `.local`, `.localhost`, `.intranet`, `.corp`, `.home`, `.lan`. Refused **before** any DNS call.
+3. **DNS resolution + IP-range check** — `socket.getaddrinfo()` resolves the host, and **every** returned IP is checked against an explicit `_BLOCKED_NETS` list (loopback `127/8` + `::1`; RFC1918 `10/8`, `172.16/12`, `192.168/16`; CGNAT `100.64/10` — Python 3.14's `is_private` misses this so it's listed explicitly; link-local `169.254/16` incl. cloud metadata + `fe80::/10`; unique-local `fc00::/7`; unspecified `0/8` + `::/128`; multicast `224/4` + `ff00::/8`; reserved `240/4`; IETF protocol `192.0.0/24`; benchmark `198.18/15`). If **any** resolved address is in a blocked range, the request is refused.
+4. **IPv4-mapped IPv6 unwrap** — `::ffff:169.254.169.254` is unwrapped to `169.254.169.254` before the range check (catches the common bypass attempt).
+5. **Redirect re-validation** — the validator runs as an `httpx.Client(event_hooks={"request": [_ssrf_guard]})`. The hook fires on **every** outbound request — the initial fetch, the `/robots.txt` and `/llms.txt` secondary lookups, **and every redirect hop**. A public URL that 302s to `http://169.254.169.254/` is refused at the redirect target, not at the original URL.
+6. **Fail-CLOSED** — any DNS error, parse error, or unknown address family returns the refusal, not the data.
+7. **Uniform user-facing message** — every blocked case returns the same friendly string: `"We can only score public web pages — please paste a public URL."` so a hostile prober can't enumerate the blocklist by observing different errors, while a legitimate user who pastes their staging URL by mistake isn't made to feel they did something wrong.
 
-| Probe target | Backend behavior |
-|---|---|
-| `http://169.254.169.254/latest/meta-data/` (AWS metadata) | Backend **attempted the fetch**; failed only because nothing was listening on that IP from Vercel's runtime. |
-| `http://localhost/` | Backend **attempted the fetch**; connection refused (nothing on localhost on that runtime). |
-| `file:///etc/passwd` | Normalized to `https://file:///etc/passwd` by `_norm_url`, then failed at httpx parse — accidental defense, not intentional. |
+**Proof.** `tests/test_ssrf.py` covers both directions:
 
-That those probes failed today is environment luck, not a control. If Vercel's runtime ever has a path to a private network, an internal service, or a cloud metadata endpoint (e.g. as the project grows into preview deploys, a sidecar, or a self-hosted fork), the same code reaches them.
+| Category | Cases | Result |
+|---|---|---|
+| Scheme allowlist (file/ftp/gopher/data/javascript/about/no-scheme) | 7 | ✓ blocked |
+| Hostname blocklist (localhost incl. `:8000`, metadata.google.internal, `*.internal`, `*.local`, `*.corp`, `*.home`, `*.lan`, trailing-dot variant) | 10 | ✓ blocked |
+| IPv4 literals (169.254.169.254, 127/8, 10/8, 172.16/12, 192.168/16, CGNAT, 0.0.0.0, multicast, reserved, IETF protocol, benchmark) | 15 | ✓ blocked |
+| IPv6 literals (`::1`, `::`, `fc00::1`, `fe80::1`, `ff00::1`) | 5 | ✓ blocked |
+| IPv4-mapped IPv6 (`::ffff:169.254.169.254`, `::ffff:127.0.0.1`, `::ffff:10.0.0.1`) | 3 | ✓ blocked |
+| Public IP literals (8.8.8.8, 1.1.1.1, example.com class, public IPv6) | 4 | ✓ allowed |
+| DNS host → public IP | 1 | ✓ allowed |
+| DNS host → metadata / loopback / RFC1918 | 3 | ✓ blocked |
+| DNS error → fail-closed | 2 | ✓ blocked |
+| Edge cases (no host, empty, unparseable, uniform-message invariant) | 4 | ✓ blocked / uniform |
+| `_fetch()` short-circuits before any network call on initial-URL block | 8 | ✓ blocked |
+| `_fetch()` passes through to a real public URL unchanged | 1 | ✓ allowed |
+| **Redirect re-validation — public → 302 → metadata** | 1 | ✓ blocked at the redirect target |
+| **Redirect re-validation — public → 302 → localhost** | 1 | ✓ blocked at the redirect target |
+| Redirect public → public — no regression | 1 | ✓ allowed |
+| `_ssrf_guard()` hook directly | 2 | ✓ correct |
+| **Total** | **71** | **71 passed in 2.22s** |
 
-**Why it matters even on hobby Vercel:**
-- The backend additionally fetches `/robots.txt` and `/llms.txt` at the **same parsed host**. If the attacker passes a host whose DNS resolves to an internal IP, all three requests hit internal infrastructure.
-- The endpoint has `Access-Control-Allow-Origin: *`, so any website's JavaScript can use score.seoryon.com as a proxy to scan addresses on behalf of the requester.
+**Live verification.** Probed `https://score.seoryon.com/api/score?url=…` post-deploy:
+*Listed in the deploy log below this file — see the deploy notes appended at commit time.*
 
-**Recommended fix (for founder approval):**
-1. After `urlparse`, resolve the host with `socket.getaddrinfo` and reject responses with private / loopback / link-local / multicast / reserved IPs (`ipaddress.ip_address(...).is_private | .is_loopback | .is_link_local | .is_multicast | .is_reserved`).
-2. Enforce scheme allowlist (`{"http","https"}`) before any normalization.
-3. Re-validate after redirects (httpx `follow_redirects=True` means a redirect to `http://169.254.169.254` would otherwise bypass step 1).
-4. Add a max-response-size cap (a few MB) to bound parsing cost.
+**DNS rebinding (TOCTOU) — closed.** The first iteration of this fix left a residual TOCTOU window between the validator's `getaddrinfo()` and httpx's connect-time DNS lookup. The Codex adversarial reviewer (Phase 7 of the build loop) caught it and refused to ship. The fix shipped is **module-level `socket.getaddrinfo` monkey-patching gated by a thread-local pin map**: when `_fetch()` enters, it stores the validator-approved IPs in `_DNS_PIN_TLS.pins`; while the pin is active, the patched `_pinning_getaddrinfo` returns ONLY those validated IPs for the same host within that thread; on `_fetch()` exit (success, error, or exception — `try/finally`) the pin is cleared. httpx's underlying transport calls `socket.getaddrinfo` internally to connect, so it hits the pinning shim and lands on a pre-approved IP. No second resolver call can be observed by the attacker, so DNS rebinding has no window to exploit.
 
-**Do not deploy this without explicit approval** — it changes behavior real users depend on and could legitimately break score requests on edge-case hosts.
+Tested in `tests/test_ssrf.py::TestDnsRebinding` with a deliberately-flipping fake DNS that returns a public IP on the first call and `169.254.169.254` on the second. The test asserts the connect-time lookup returns only the public IP. (See also the tests covering pin scoping per host, pin clearing on exit, and pass-through when no pin is active.)
 
-### 3.2 No application-level rate limiting — **MEDIUM**
+**One honest residual remains: per-thread isolation, not per-task.** The pin lives in a `threading.local()`. Python's `asyncio` runs many tasks on a single thread, so if `oryon-score` is ever wrapped to call `score_url()` concurrently from multiple asyncio tasks on the SAME thread, the pin would be shared and could be stomped on. This product's surface (Vercel serverless invocation per request + a sync `httpx.Client`) doesn't expose that pattern, but anyone embedding the package in an `asyncio` server should serialize `score_url()` calls or switch to a `contextvars`-based pin.
 
-`api/score.py` has no per-IP / per-minute limit. Vercel's platform offers DDoS protection but nothing per-key. Combined with the open CORS policy, anyone can run sustained scoring loops. Today the only damage is Vercel compute cost; combined with SSRF that risk grows.
+**Out of scope but worth flagging:** the same SSRF guard now also protects the **pip CLI**. A user running `oryon-score` locally still cannot use it to probe their own internal network — which protects anyone who later wraps the package behind a "scoring-as-a-service" without realising they'd inherit the SSRF.
 
-**Recommended (for approval):** add a small in-memory token bucket keyed by `X-Forwarded-For` (~30 req/min per IP), or move to Vercel's `@vercel/edge-config` / `@upstash/ratelimit`. Returns HTTP 429.
+### 3.2 No application-level rate limiting — **MEDIUM · SCHEDULED NEXT (deliberate separate pass)**
 
-### 3.3 Permissive CORS — **MEDIUM**
+`api/score.py` has no per-IP / per-minute limit. Vercel's platform offers DDoS protection but nothing per-key. Anyone can run sustained scoring loops today. With the SSRF guard now closed (§3.1) the worst-case damage is Vercel compute cost, not data exposure — which lowers the urgency without eliminating it.
 
-`Access-Control-Allow-Origin: *` was almost certainly intentional (lets people embed the scorer or call it from CLI/notebooks). It does, however, enable the cross-origin abuse pattern above. **Not necessarily worth changing** — but worth a conscious decision.
+**This is being handled as a SEPARATE dedicated pass — not silently deferred.** The reason it wasn't bundled with the SSRF fix:
+
+- A per-cold-start **in-memory** token bucket in a serverless function gives **illusory** protection: each function instance has its own counter, so a moderately popular `IP_HASH` lands on many instances and the effective rate limit is `n_instances × declared_limit`. That's not "rate limiting" — that's theater.
+- Correct rate limiting needs **cross-instance state**: either Upstash Redis (`@upstash/ratelimit`), Vercel KV, or Vercel Edge Config. That's a small infrastructure addition that deserves its own review (latency budget against the 8 s function ceiling, fallback behavior on the rate-limit store being unreachable, how aggressive to be for the CLI's `--api` mode which legitimately fires bursts).
+
+**Scheduled approach for the next pass:**
+1. Add Upstash Redis as a Vercel integration (free tier covers tens of thousands of requests/day).
+2. `@upstash/ratelimit` sliding window, ~30 req/min per IP, 90 req/min per IP burst.
+3. Fail-OPEN on Upstash unreachable (don't take down the free public tool when the rate-limit store has an outage — log + degrade).
+4. Returns HTTP 429 with `Retry-After`.
+
+### 3.3 Permissive CORS — **MEDIUM · KEPT OPEN BY DESIGN**
+
+`Access-Control-Allow-Origin: *` is intentional and **kept that way** after explicit review:
+- The `oryon-score` CLI's `--api` mode (and the README example for calling `/api/score` from a notebook or CI) **depends on** open CORS.
+- External integrators have started embedding the scorer; tightening would silently break them.
+- With SSRF closed (§3.1), the cross-origin abuse vector this previously enabled — "any website's JS can use score.seoryon.com to scan internal addresses" — no longer applies.
+- Residual risk (a third-party site using the open CORS to fire scoring loops from a visitor's browser) is mitigated by the rate-limit work above (§3.2), not by CORS tightening.
+
+Decision: keep `*`, revisit only if a concrete abuse pattern emerges.
 
 ### 3.4 Error handler leaks internals — **LOW**
 
@@ -150,7 +185,7 @@ except Exception as exc:  # last-resort safety net
 
 ---
 
-## What this commit applied (safe items only)
+## What the first pass applied (safe items only)
 
 1. Replaced the favicon with the SEOryon S-mark (no security impact, brand cleanup).
 2. Made the landing trilingual + added the GEO education + FAQ + FAQPage JSON-LD.
@@ -158,21 +193,25 @@ except Exception as exc:  # last-resort safety net
 4. Added a `/privacy` page that **accurately** describes the data flow — including the backend, including the absence of analytics — rather than copy-pasting the Inspect "100% local" claim that would be **false** for this product.
 5. Added `robots.txt` and `sitemap.xml` (the route table was tightened, with `/privacy` ahead of the catch-all).
 
-## What this commit deliberately did **not** change
+## What the second pass applied (SSRF — with founder approval)
 
-- `api/score.py` — the live backend logic.
-- `oryon_score/*.py` — the published pip package.
-- CORS, rate limiting, error response shape — all backend-touching.
+6. **Closed §3.1 (SSRF) at the shared `_fetch()` chokepoint** in `oryon_score/score.py`. Defense in depth: scheme allowlist + hostname blocklist + DNS-resolved IP range check + IPv4-mapped IPv6 unwrap + redirect re-validation via `event_hooks`. Fail-CLOSED on any error.
+7. **Added `tests/test_ssrf.py`** — 71 cases, both directions including the public→302→internal redirect bypass.
+8. **Bumped `oryon-score` to 0.2.0** and rebuilt the wheel (`dist/oryon_score-0.2.0-py3-none-any.whl`). PyPI upload is the founder's to run.
 
-These are listed above with concrete patch recommendations and need explicit go-ahead before being deployed.
+## What is still deliberately deferred
+
+- **Rate limiting (§3.2): SCHEDULED NEXT** as a dedicated pass with Upstash / Vercel KV (the only way to get correct cross-instance limits in a serverless function). Listed in this file rather than dropped.
+- **CORS (§3.3): kept open by design** (CLI `--api` mode and external integrators rely on it). With SSRF closed, the previous abuse vector no longer applies.
+- **Error response shape (§3.4)**, **CSP headers (§2)**, **`pip-audit` in CI**: low-impact follow-ups, not blocking anything.
 
 ---
 
 ## Recommended next steps (in order of impact)
 
-1. **Approve the SSRF fix** (§3.1) and deploy together with a republished `oryon-score` 0.2.0.
-2. **Add app-level rate limit** (§3.2) — small but valuable; prevents accidental loops too.
-3. **Decide on CORS** (§3.3): either keep `*` consciously, or restrict to `score.seoryon.com` + a handful of partner origins.
-4. **Tighten error response** (§3.4): generic 500 to the user, full exception in Vercel logs.
+1. ~~**Approve the SSRF fix** (§3.1)~~ — ✅ shipped 2026-06-26 as `oryon-score` 0.2.0 + deployed backend.
+2. **Republish `oryon-score` 0.2.0 to PyPI** (`twine upload dist/oryon_score-0.2.0*`) so CLI users inherit the protection.
+3. **Add the rate limit** (§3.2): Upstash integration → `@upstash/ratelimit` → 30 req/min/IP sliding window → 429 with `Retry-After`. Fail-OPEN on Upstash unreachable.
+4. **Tighten error response** (§3.4): generic 500 to the client, full exception in Vercel logs.
 5. **Add CSP + security headers** to `vercel.json` (§2). Low risk, free win.
 6. (Optional) **Add `pip-audit` to CI** so dependency CVEs surface automatically.

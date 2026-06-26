@@ -185,6 +185,19 @@ Open source under MIT. Fork it, run it on your own infra, change it, ship it.
 
 ---
 
+## SSRF guard (0.2.0+)
+
+Both the hosted scorer and the pip CLI refuse to fetch URLs that resolve to
+non-public addresses — RFC1918 / loopback / link-local (incl. `169.254.169.254`
+cloud metadata) / IPv6 ULA / multicast / reserved — and re-validate on every
+redirect hop. Public URLs are unaffected. See `SECURITY_REVIEW.md` §3.1 for
+the full design + test matrix.
+
+If you wrap `score_url()` behind your own hosted endpoint, **you inherit this
+guard** — don't disable it without re-reading §3.1.
+
+---
+
 ## Inspired by
 
 This tool's structured-signal approach was inspired by [`citation-intelligence`](https://github.com/AutomateLab-tech/citation-intelligence) by AutomateLab — a self-hosted MCP server for measuring LLM citation visibility. Go check it out if you want programmatic citation data from inside Claude Code or Cursor. This tool solves a different layer (page readiness, not live citation queries) and is original work.

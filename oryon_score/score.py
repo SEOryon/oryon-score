@@ -6,8 +6,11 @@ No LLM calls. No API keys. Pure HTML parsing + signal heuristics.
 """
 from __future__ import annotations
 
+import ipaddress
 import json
 import re
+import socket
+import threading
 import time
 from dataclasses import dataclass, field, asdict
 from typing import Any
@@ -25,6 +28,218 @@ UA = (
     "OryonAISearchScore/1.0 (+https://seoryon.com)"
 )
 TIMEOUT_S = 8.0  # Stay under Vercel's hobby 10s function limit, leaving time for parsing
+
+# ============================================================================
+# SSRF GUARD — see SECURITY_REVIEW.md §3.1
+#
+# Goal: refuse to fetch URLs that resolve to non-public addresses (cloud
+# metadata, localhost, RFC1918, link-local, etc.) so the public /api/score
+# endpoint and the pip CLI can't be tricked into probing internal networks.
+#
+# Design — three layers of defense:
+#
+#   1. URL-level validation (scheme allowlist + hostname blocklist + IP-range
+#      check on every resolved address). Runs on the initial URL and via
+#      httpx event_hooks on every redirect hop, so a public URL that 302s
+#      to 169.254.169.254 is refused at the redirect target.
+#
+#   2. IP-PINNING against DNS rebinding (TOCTOU). After the validator
+#      resolves a host's IPs and approves them, we store them in a
+#      thread-local "pin map". A module-level monkey-patch of
+#      socket.getaddrinfo() consults that pin map and returns ONLY the
+#      validated IPs to any subsequent lookup of the same host within this
+#      thread. This means httpx's own connect-time DNS lookup cannot land
+#      on a freshly-rebound private IP — it sees the IPs we already approved.
+#
+#   3. Fail-CLOSED: if DNS fails, the address family is unrecognized, or
+#      the URL parse trips, the whole request is refused with one uniform,
+#      friendly user-facing message. We do not leak which check fired (a
+#      hostile probe would otherwise enumerate ranges by observing errors).
+# ============================================================================
+
+_BLOCKED_NETS = (
+    # IPv4
+    ipaddress.ip_network("0.0.0.0/8"),         # "this network"
+    ipaddress.ip_network("10.0.0.0/8"),        # private RFC1918
+    ipaddress.ip_network("100.64.0.0/10"),     # CGNAT (Python's is_private misses this on 3.14)
+    ipaddress.ip_network("127.0.0.0/8"),       # loopback
+    ipaddress.ip_network("169.254.0.0/16"),    # link-local — incl. 169.254.169.254 cloud metadata
+    ipaddress.ip_network("172.16.0.0/12"),     # private RFC1918
+    ipaddress.ip_network("192.0.0.0/24"),      # IETF protocol assignments
+    ipaddress.ip_network("192.168.0.0/16"),    # private RFC1918
+    ipaddress.ip_network("198.18.0.0/15"),     # benchmark
+    ipaddress.ip_network("224.0.0.0/4"),       # multicast
+    ipaddress.ip_network("240.0.0.0/4"),       # reserved
+    # IPv6
+    ipaddress.ip_network("::/128"),            # unspecified
+    ipaddress.ip_network("::1/128"),           # loopback
+    ipaddress.ip_network("fc00::/7"),          # unique local
+    ipaddress.ip_network("fe80::/10"),         # link-local
+    ipaddress.ip_network("ff00::/8"),          # multicast
+)
+
+# Hostnames we refuse outright (independent of DNS — defense in depth).
+_BLOCKED_HOSTS = frozenset({
+    "localhost",
+    "ip6-localhost",
+    "ip6-loopback",
+    "metadata",
+    "metadata.google.internal",
+    "metadata.aws",
+    "instance-data",
+})
+
+# Internal-flavored TLDs / suffixes we refuse outright.
+_BLOCKED_HOST_SUFFIXES = (".internal", ".local", ".localhost", ".intranet", ".corp", ".home", ".lan")
+
+# Uniform refusal message — friendly, no security-detail leak.
+# Same string returned regardless of which check fired (don't enumerate the blocklist for hostile probes).
+_REFUSAL_MSG = "We can only score public web pages — please paste a public URL."
+
+# Thread-local pin map: host (lower-cased) → list of validated getaddrinfo
+# tuples. Set by _fetch() for the duration of one fetch; consulted by the
+# monkey-patched _pinning_getaddrinfo() during httpx's connect-time lookup.
+# Thread-local so concurrent _fetch() calls don't interfere.
+_DNS_PIN_TLS = threading.local()
+
+# Capture the real getaddrinfo BEFORE we replace it so the validator (and
+# anything else inside this module) can do unpinned lookups.
+_REAL_GETADDRINFO = socket.getaddrinfo
+
+
+def _pinning_getaddrinfo(host, port, *args, **kwargs):
+    """
+    Module-installed replacement for socket.getaddrinfo.
+
+    If the current thread is inside an active _fetch() and has pinned the
+    host, return ONLY the pre-validated address tuples — even if the real
+    resolver would now return something different (DNS rebinding).
+
+    Otherwise, fall through to the real resolver — so unrelated code paths
+    in tests, the CLI, and the user's interpreter are unaffected.
+    """
+    pins = getattr(_DNS_PIN_TLS, "pins", None)
+    if pins is not None and isinstance(host, str):
+        key = host.lower().strip().rstrip(".")
+        if key in pins:
+            # Adapt cached tuples to the caller's requested port.
+            return [
+                (family, socktype, proto, canon, _replace_port(sockaddr, port))
+                for (family, socktype, proto, canon, sockaddr) in pins[key]
+            ]
+    return _REAL_GETADDRINFO(host, port, *args, **kwargs)
+
+
+def _replace_port(sockaddr, port):
+    # sockaddr is (host, port) for IPv4 or (host, port, flowinfo, scope_id) for IPv6.
+    if port is None:
+        port = 0
+    if len(sockaddr) == 2:
+        return (sockaddr[0], port)
+    return (sockaddr[0], port) + tuple(sockaddr[2:])
+
+
+# Install the patch once at import time. Idempotent: re-importing this module
+# (e.g. in tests) won't re-wrap an already-patched getaddrinfo.
+if socket.getaddrinfo is not _pinning_getaddrinfo:
+    socket.getaddrinfo = _pinning_getaddrinfo
+
+
+class _SSRFBlocked(httpx.HTTPError):
+    """Raised by the event hook when an outbound request would target a non-public address."""
+    def __init__(self) -> None:
+        super().__init__(_REFUSAL_MSG)
+
+
+def _ip_is_blocked(ip: ipaddress._BaseAddress) -> bool:
+    # Unwrap IPv4-mapped IPv6 (e.g. ::ffff:169.254.169.254) before checking ranges.
+    if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped is not None:
+        ip = ip.ipv4_mapped
+    return any(ip in net for net in _BLOCKED_NETS)
+
+
+def _validate_url_safety(url: str, pin_into: dict | None = None) -> str | None:
+    """
+    Return None if the URL is safe to fetch, else a uniform refusal reason.
+
+    Checks (in order):
+      1. Scheme allowlist: http / https only.
+      2. Hostname blocklist + suffix blocklist.
+      3. DNS resolution → every resolved IP must clear _BLOCKED_NETS.
+
+    When `pin_into` is provided, the validated address tuples are written to
+    `pin_into[host_lower]`. The thread-local _DNS_PIN_TLS.pins dict is the
+    intended target — once populated, the monkey-patched getaddrinfo returns
+    ONLY these validated addresses to httpx's connect-time DNS lookup, which
+    closes the DNS-rebind TOCTOU window.
+
+    Fails CLOSED: any parse / DNS error → refusal.
+    """
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return _REFUSAL_MSG
+
+    if parsed.scheme not in ("http", "https"):
+        return _REFUSAL_MSG
+
+    host = parsed.hostname
+    if not host:
+        return _REFUSAL_MSG
+
+    host_l = host.lower().strip().rstrip(".")
+    if host_l in _BLOCKED_HOSTS or host_l.endswith(_BLOCKED_HOST_SUFFIXES):
+        return _REFUSAL_MSG
+
+    # If the host is a literal IP, check directly (skip DNS).
+    try:
+        literal = ipaddress.ip_address(host_l)
+        if _ip_is_blocked(literal):
+            return _REFUSAL_MSG
+        # No DNS to pin for a literal — httpx will just use the IP directly.
+        return None
+    except ValueError:
+        pass  # not a literal IP, fall through to DNS
+
+    # Resolve via the REAL resolver (not our pinning shim) so we get fresh
+    # ground truth, then validate every record.
+    try:
+        infos = _REAL_GETADDRINFO(host_l, None, type=socket.SOCK_STREAM)
+    except (socket.gaierror, OSError, UnicodeError):
+        return _REFUSAL_MSG
+
+    if not infos:
+        return _REFUSAL_MSG
+
+    for _family, _socktype, _proto, _canonname, sockaddr in infos:
+        ip_str = sockaddr[0]
+        try:
+            ip = ipaddress.ip_address(ip_str)
+        except ValueError:
+            return _REFUSAL_MSG  # unparseable address → fail closed
+        if _ip_is_blocked(ip):
+            return _REFUSAL_MSG
+
+    # All addresses approved — pin them so httpx's connect-time lookup
+    # returns ONLY these, even if DNS has since been re-poisoned.
+    if pin_into is not None:
+        pin_into[host_l] = infos
+
+    return None
+
+
+def _ssrf_guard(request: httpx.Request) -> None:
+    """
+    httpx event hook — runs on every outbound request, including each
+    redirect hop. Validates the new target, and (when called from inside
+    _fetch) pins the validated IPs so httpx's own connect-time DNS lookup
+    cannot land on a rebound private address.
+    """
+    pins = getattr(_DNS_PIN_TLS, "pins", None)
+    reason = _validate_url_safety(str(request.url), pin_into=pins)
+    if reason is not None:
+        raise _SSRFBlocked()
+
 
 # AI crawler user agents we check robots.txt against
 AI_CRAWLERS = [
@@ -103,9 +318,26 @@ def _fetch(url: str) -> tuple[httpx.Response | None, str | None]:
         "Pragma": "no-cache",
         "X-Tool": "OryonAISearchScore/1.0",
     }
+    # Install a fresh per-fetch IP-pin map. _validate_url_safety() writes
+    # validated address tuples into it; the monkey-patched getaddrinfo reads
+    # from it. This is what closes the DNS-rebind TOCTOU window.
+    pins: dict = {}
+    # Pre-validate the initial URL so we never open a TCP connection to a
+    # blocked target — even before the event hook fires.
+    reason = _validate_url_safety(url, pin_into=pins)
+    if reason is not None:
+        return None, reason
+    _DNS_PIN_TLS.pins = pins
     try:
+        # event_hooks fires on the initial request AND on every redirect hop,
+        # which closes the "public URL 302-redirects to 169.254.169.254" bypass.
+        # The hook re-validates AND re-pins each new host, so httpx's
+        # connect-time DNS lookup also lands on a pre-approved IP.
         with httpx.Client(
-            timeout=TIMEOUT_S, follow_redirects=True, headers=headers
+            timeout=TIMEOUT_S,
+            follow_redirects=True,
+            headers=headers,
+            event_hooks={"request": [_ssrf_guard]},
         ) as client:
             r = client.get(url)
         if r.status_code >= 400:
@@ -122,8 +354,16 @@ def _fetch(url: str) -> tuple[httpx.Response | None, str | None]:
                 msg = f"HTTP {sc} {r.reason_phrase}"
             return None, msg
         return r, None
+    except _SSRFBlocked:
+        # Friendly refusal — same message for every blocked-target reason
+        # (don't enumerate the blocklist back to a hostile prober).
+        return None, _REFUSAL_MSG
     except httpx.HTTPError as e:
         return None, f"Fetch failed: {e!s}"
+    finally:
+        # Always clear the pin so unrelated code (other Python in this
+        # thread) sees the real resolver again.
+        _DNS_PIN_TLS.pins = None
 
 
 def _fetch_text(url: str) -> str:
