@@ -197,6 +197,11 @@ h1 {
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
   margin-top: 24px; max-width: 680px;
 }
+/* Single-card variant — looks intentional, not a half-empty 2-col grid. */
+.download-row.download-row-single {
+  grid-template-columns: 1fr;
+  max-width: 360px;
+}
 .dl-chip {
   display: inline-flex; align-items: center; gap: 12px;
   background: var(--surface-card);

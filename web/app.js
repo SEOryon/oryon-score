@@ -5,7 +5,7 @@
    Language priority: ?lang= URL param > localStorage > navigator.
    DE and FR are natively localized (not literal translations).
    Brand/product names (SEOryon, Oryon, ChatGPT, Perplexity, Gemini,
-   Google AI, Claude, GitHub, PyPI) and technical terms kept as
+   Google AI, Claude, GitHub) and technical terms kept as
    convention (schema, canonical, robots.txt, llms.txt, hreflang,
    FAQPage, JSON-LD, GEO) are left as-is across all languages.
 
@@ -38,7 +38,6 @@
 
       dl1_title: "Star on GitHub",
       dl1_sub: "Open source · MIT · Audit your whole sitemap",
-      dl2_sub: "Score URLs from your terminal · CI-friendly",
 
       how_h2: "How it works",
       how1_h3: "You paste a URL",
@@ -94,7 +93,7 @@
       faq6_q: "Why paste an article URL, not the homepage?",
       faq6_a: "Homepages are navigation hubs; AI assistants rarely cite them. They cite specific, deep pages that answer a specific question — articles, guides, FAQs, comparison pages. Score the deepest, most useful page you have. The result will tell you a lot more about how citable your real content is.",
       faq7_q: "Is the score really free? No signup, no LLM calls?",
-      faq7_a: "Yes. The scorer is a deterministic HTML parser — it fetches your URL, reads the markup, and runs 27 rule-based checks. No LLM calls, no API keys, no account, no rate-limit gating. The code is open-source under MIT, and you can self-host it or run it from your terminal with pip install oryon-score.",
+      faq7_a: "Yes. The scorer is a deterministic HTML parser — it fetches your URL, reads the markup, and runs 27 rule-based checks. No LLM calls, no API keys, no account, no rate-limit gating. The code is open-source under MIT on GitHub, so you can read it, fork it, or self-host the whole tool on your own infra.",
       faq8_q: "What's the difference between the free score and the SEOryon platform?",
       faq8_a: "The free score audits one URL at a time, on demand. SEOryon (the paid platform) does it continuously across every URL on your site, tracks where you're actually being cited across ChatGPT, Perplexity, Gemini, Google AI, and Claude — and writes the articles that get you cited in the first place. The score answers “is this page citable?”. SEOryon answers “what should I publish next, and where am I winning?”.",
 
@@ -152,7 +151,6 @@
 
       dl1_title: "Auf GitHub bewerten",
       dl1_sub: "Open Source · MIT · Prüfe deine ganze Sitemap",
-      dl2_sub: "URLs aus dem Terminal prüfen · CI-tauglich",
 
       how_h2: "So funktioniert’s",
       how1_h3: "Du fügst eine URL ein",
@@ -208,7 +206,7 @@
       faq6_q: "Warum eine Artikel-URL einfügen und nicht die Startseite?",
       faq6_a: "Startseiten sind Navigations-Hubs; KI-Assistenten zitieren sie selten. Sie zitieren spezifische, tiefe Seiten, die eine konkrete Frage beantworten – Artikel, Guides, FAQs, Vergleichsseiten. Prüfe die tiefste, hilfreichste Seite, die du hast. Das Ergebnis sagt viel mehr darüber aus, wie zitierfähig dein eigentlicher Inhalt ist.",
       faq7_q: "Ist der Score wirklich kostenlos? Ohne Anmeldung, ohne LLM-Aufrufe?",
-      faq7_a: "Ja. Der Scorer ist ein deterministischer HTML-Parser – er ruft deine URL ab, liest das Markup und führt 27 regelbasierte Prüfungen aus. Keine LLM-Aufrufe, keine API-Schlüssel, kein Konto, keine Rate-Limits. Der Code ist Open Source unter MIT, und du kannst ihn selbst hosten oder per pip install oryon-score im Terminal nutzen.",
+      faq7_a: "Ja. Der Scorer ist ein deterministischer HTML-Parser – er ruft deine URL ab, liest das Markup und führt 27 regelbasierte Prüfungen aus. Keine LLM-Aufrufe, keine API-Schlüssel, kein Konto, keine Rate-Limits. Der Code ist Open Source unter MIT auf GitHub – du kannst ihn lesen, forken oder das ganze Tool auf deiner eigenen Infrastruktur selbst hosten.",
       faq8_q: "Was unterscheidet den kostenlosen Score von der SEOryon-Plattform?",
       faq8_a: "Der kostenlose Score prüft eine URL auf Abruf. SEOryon (die kostenpflichtige Plattform) tut das laufend für jede URL deiner Website, verfolgt, wo du in ChatGPT, Perplexity, Gemini, Google AI und Claude tatsächlich zitiert wirst – und schreibt die Artikel, die dich überhaupt erst zitierfähig machen. Der Score beantwortet: „Ist diese Seite zitierfähig?“. SEOryon beantwortet: „Was sollte ich als Nächstes veröffentlichen, und wo gewinne ich gerade?“.",
 
@@ -265,7 +263,6 @@
 
       dl1_title: "Star sur GitHub",
       dl1_sub: "Open source · MIT · Auditez tout votre sitemap",
-      dl2_sub: "Analysez des URL depuis votre terminal · prêt pour la CI",
 
       how_h2: "Comment ça marche",
       how1_h3: "Vous collez une URL",
@@ -321,7 +318,7 @@
       faq6_q: "Pourquoi coller une URL d’article et pas la page d’accueil ?",
       faq6_a: "Les pages d’accueil sont des hubs de navigation ; les assistants IA les citent rarement. Ils citent des pages profondes et spécifiques qui répondent à une question précise — articles, guides, FAQ, comparatifs. Analysez la page la plus profonde et utile que vous ayez. Le résultat en dira bien plus sur la citabilité réelle de votre contenu.",
       faq7_q: "Le score est-il vraiment gratuit ? Sans inscription, sans appel à un LLM ?",
-      faq7_a: "Oui. L’outil est un parseur HTML déterministe — il récupère votre URL, lit le balisage et exécute 27 vérifications fondées sur des règles. Aucun appel à un LLM, aucune clé d’API, aucun compte, aucun rate-limit. Le code est open source sous MIT, et vous pouvez l’auto-héberger ou l’utiliser en terminal avec pip install oryon-score.",
+      faq7_a: "Oui. L’outil est un parseur HTML déterministe — il récupère votre URL, lit le balisage et exécute 27 vérifications fondées sur des règles. Aucun appel à un LLM, aucune clé d’API, aucun compte, aucun rate-limit. Le code est open source sous MIT sur GitHub — vous pouvez le lire, le forker ou auto-héberger tout l’outil sur votre propre infrastructure.",
       faq8_q: "Quelle différence entre le score gratuit et la plateforme SEOryon ?",
       faq8_a: "Le score gratuit audite une URL à la fois, à la demande. SEOryon (la plateforme payante) le fait en continu sur chaque URL de votre site, suit où vous êtes réellement cité dans ChatGPT, Perplexity, Gemini, Google AI et Claude — et rédige les articles qui vous rendent citable au départ. Le score répond à : « cette page est-elle citable ? ». SEOryon répond à : « que dois-je publier ensuite, et où suis-je en train de gagner ? ».",
 
