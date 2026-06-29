@@ -60,52 +60,60 @@
 
   <main>
     <section class="hero">
-      <div class="hero-meta">
-        <span class="status-dot"></span>
-        <span class="status-text" data-i18n="hero_pill">Live · 27 signals · 5 buckets · Free forever</span>
-      </div>
+      <div class="hero-grid">
+        <div class="hero-content">
+          <div class="hero-meta">
+            <span class="status-dot"></span>
+            <span class="status-text" data-i18n="hero_pill">Live · 27 signals · 5 buckets · Free forever</span>
+          </div>
 
-      <h1 data-i18n-html="hero_h1">Score any URL for <span class="brand-text">AI search readiness</span>.</h1>
-      <p class="sub" data-i18n="hero_sub">Twenty-seven signals across schema, content format, authority, crawlability, and freshness. A free GEO (generative engine optimization) audit, inspired by Google's 2026 AI-search guidance. Results in 10 seconds — no signup, no LLM calls, no API keys.</p>
+          <h1 data-i18n-html="hero_h1">Score any URL for <span class="brand-text">AI search readiness</span>.</h1>
+          <p class="sub" data-i18n="hero_sub">Twenty-seven signals across schema, content format, authority, crawlability, and freshness. A free GEO (generative engine optimization) audit, inspired by Google's 2026 AI-search guidance. Results in 10 seconds — no signup, no LLM calls, no API keys.</p>
 
-      <form id="scoreForm" class="urlform" autocomplete="off">
-        <input id="urlInput" type="text" name="url" placeholder="example.com/blog/your-best-article" inputmode="url" autofocus aria-label="URL to score" />
-        <button type="submit" id="scoreBtn" data-i18n="score_btn">Score it →</button>
-      </form>
-      <p class="microcopy" data-i18n="hero_micro">Paste an article URL, not the homepage. The deeper the page, the more useful the score.</p>
+          <form id="scoreForm" class="urlform" autocomplete="off">
+            <input id="urlInput" type="text" name="url" placeholder="example.com/blog/your-best-article" inputmode="url" autofocus aria-label="URL to score" />
+            <button type="submit" id="scoreBtn" data-i18n="score_btn">Score it →</button>
+          </form>
+          <p class="microcopy" data-i18n="hero_micro">Paste an article URL, not the homepage. The deeper the page, the more useful the score.</p>
 
-      <!-- Product-signals row: what gets checked, dashboard-style -->
-      <div class="signals-row" aria-label="Scoring buckets">
-        <div class="signal-card">
-          <div class="signal-name" data-i18n="b1_name">Schema &amp; structure</div>
-          <div class="signal-meta" data-i18n="b1_meta">8 signals · 30 pts</div>
-        </div>
-        <div class="signal-card">
-          <div class="signal-name" data-i18n="b2_name">Content format</div>
-          <div class="signal-meta" data-i18n="b2_meta">5 signals · 25 pts</div>
-        </div>
-        <div class="signal-card">
-          <div class="signal-name" data-i18n="b3_name">Authority</div>
-          <div class="signal-meta" data-i18n="b3_meta">5 signals · 20 pts</div>
-        </div>
-        <div class="signal-card">
-          <div class="signal-name" data-i18n="b4_name">Crawlability</div>
-          <div class="signal-meta" data-i18n="b4_meta">6 signals · 15 pts</div>
-        </div>
-        <div class="signal-card">
-          <div class="signal-name" data-i18n="b5_name">Freshness</div>
-          <div class="signal-meta" data-i18n="b5_meta">3 signals · 10 pts</div>
-        </div>
-      </div>
+          <!-- Product-signals row: what gets checked, dashboard-style -->
+          <div class="signals-row" aria-label="Scoring buckets">
+            <div class="signal-card">
+              <div class="signal-name" data-i18n="b1_name">Schema &amp; structure</div>
+              <div class="signal-meta" data-i18n="b1_meta">8 signals · 30 pts</div>
+            </div>
+            <div class="signal-card">
+              <div class="signal-name" data-i18n="b2_name">Content format</div>
+              <div class="signal-meta" data-i18n="b2_meta">5 signals · 25 pts</div>
+            </div>
+            <div class="signal-card">
+              <div class="signal-name" data-i18n="b3_name">Authority</div>
+              <div class="signal-meta" data-i18n="b3_meta">5 signals · 20 pts</div>
+            </div>
+            <div class="signal-card">
+              <div class="signal-name" data-i18n="b4_name">Crawlability</div>
+              <div class="signal-meta" data-i18n="b4_meta">6 signals · 15 pts</div>
+            </div>
+            <div class="signal-card">
+              <div class="signal-name" data-i18n="b5_name">Freshness</div>
+              <div class="signal-meta" data-i18n="b5_meta">3 signals · 10 pts</div>
+            </div>
+          </div>
 
-      <div class="download-row download-row-single">
-        <a href="https://github.com/SEOryon/oryon-score" target="_blank" rel="noopener" class="dl-chip">
-          <span class="dl-icon" aria-hidden="true">★</span>
-          <span class="dl-label">
-            <span class="dl-title" data-i18n="dl1_title">Star on GitHub</span>
-            <span class="dl-sub" data-i18n="dl1_sub">Open source · MIT · Audit your whole sitemap</span>
-          </span>
-        </a>
+          <div class="download-row download-row-single">
+            <a href="https://github.com/SEOryon/oryon-score" target="_blank" rel="noopener" class="dl-chip">
+              <span class="dl-icon" aria-hidden="true">★</span>
+              <span class="dl-label">
+                <span class="dl-title" data-i18n="dl1_title">Star on GitHub</span>
+                <span class="dl-sub" data-i18n="dl1_sub">Open source · MIT · Audit your whole sitemap</span>
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <figure class="hero-visual">
+          <img src="/hero-preview.png" alt="Oryon AI Search Readiness Score — example score 42/100 across the five buckets, with top fixes and what's-working callouts" />
+        </figure>
       </div>
     </section>
 

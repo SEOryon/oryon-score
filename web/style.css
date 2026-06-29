@@ -110,6 +110,34 @@ main { max-width: 980px; margin: 0 auto; padding: 0 24px 96px; }
 
 .hero { padding: 56px 0 24px; }
 
+/* Two-column hero — text on the left, product preview on the right.
+   Collapses to a single column on tablet/mobile (image moves below
+   the text so the URL form stays above the fold on small screens). */
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 48px;
+  align-items: center;
+}
+.hero-content { min-width: 0; }
+.hero-visual {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-visual img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+  /* Image already has its own subtle violet background; the radius +
+     tiny shadow just sits it gently into the page surface. */
+  box-shadow: 0 18px 40px rgba(74, 53, 232, 0.10),
+              0 6px 14px rgba(18, 19, 37, 0.05);
+}
+
 /* Tiny status bar above the title — feels like a system, not a startup hero */
 .hero-meta {
   display: inline-flex; align-items: center; gap: 8px;
@@ -458,8 +486,26 @@ footer .wordmark.sm {
 /* ============================================================
    Responsive
    ============================================================ */
+/* Inside the constrained left column of the 2-col hero, 5 signal cards
+   would crowd. Collapse to 3 columns so each card breathes. */
+.hero-content .signals-row { grid-template-columns: repeat(3, 1fr); }
+
+@media (max-width: 980px) {
+  /* Below the desktop break, the hero stacks. Image moves below the
+     text so the URL form stays high on the page. */
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .hero-visual { order: 2; }
+  .hero-visual img { max-width: 760px; margin: 0 auto; }
+  /* Once stacked, the signals row gets full width again. */
+  .hero-content .signals-row { grid-template-columns: repeat(5, 1fr); }
+}
+
 @media (max-width: 860px) {
-  .signals-row { grid-template-columns: repeat(3, 1fr); }
+  .signals-row,
+  .hero-content .signals-row { grid-template-columns: repeat(3, 1fr); }
   .upsell-card { grid-template-columns: 1fr; padding: 28px; gap: 24px; }
   .upsell-right {
     border-left: none; border-top: 1px solid var(--surface-border);
@@ -478,7 +524,8 @@ footer .wordmark.sm {
   .bucket-row { grid-template-columns: 1fr; gap: 6px; }
   .bucket-pts { text-align: left; }
   .download-row { grid-template-columns: 1fr; }
-  .signals-row { grid-template-columns: repeat(2, 1fr); }
+  .signals-row,
+  .hero-content .signals-row { grid-template-columns: repeat(2, 1fr); }
   .navlinks { gap: 6px; }
   .navlinks a.nav-secondary { padding: 6px 10px; font-size: 12.5px; }
   .navlinks a.cta-link { padding: 8px 12px; font-size: 13px; }
