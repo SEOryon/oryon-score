@@ -60,7 +60,11 @@
 
   <main>
     <section class="hero">
-      <div class="hero-grid">
+      <!-- Two-column hero: copy on the left, product preview on the right.
+           Matches the inspect.seoryon.com pattern so both products feel
+           like the same family. Signals row + download chip live OUTSIDE
+           this grid so they read as full-width "what gets checked" proof. -->
+      <div class="hero-top">
         <div class="hero-content">
           <div class="hero-meta">
             <span class="status-dot"></span>
@@ -75,45 +79,45 @@
             <button type="submit" id="scoreBtn" data-i18n="score_btn">Score it →</button>
           </form>
           <p class="microcopy" data-i18n="hero_micro">Paste an article URL, not the homepage. The deeper the page, the more useful the score.</p>
-
-          <!-- Product-signals row: what gets checked, dashboard-style -->
-          <div class="signals-row" aria-label="Scoring buckets">
-            <div class="signal-card">
-              <div class="signal-name" data-i18n="b1_name">Schema &amp; structure</div>
-              <div class="signal-meta" data-i18n="b1_meta">8 signals · 30 pts</div>
-            </div>
-            <div class="signal-card">
-              <div class="signal-name" data-i18n="b2_name">Content format</div>
-              <div class="signal-meta" data-i18n="b2_meta">5 signals · 25 pts</div>
-            </div>
-            <div class="signal-card">
-              <div class="signal-name" data-i18n="b3_name">Authority</div>
-              <div class="signal-meta" data-i18n="b3_meta">5 signals · 20 pts</div>
-            </div>
-            <div class="signal-card">
-              <div class="signal-name" data-i18n="b4_name">Crawlability</div>
-              <div class="signal-meta" data-i18n="b4_meta">6 signals · 15 pts</div>
-            </div>
-            <div class="signal-card">
-              <div class="signal-name" data-i18n="b5_name">Freshness</div>
-              <div class="signal-meta" data-i18n="b5_meta">3 signals · 10 pts</div>
-            </div>
-          </div>
-
-          <div class="download-row download-row-single">
-            <a href="https://github.com/SEOryon/oryon-score" target="_blank" rel="noopener" class="dl-chip">
-              <span class="dl-icon" aria-hidden="true">★</span>
-              <span class="dl-label">
-                <span class="dl-title" data-i18n="dl1_title">Star on GitHub</span>
-                <span class="dl-sub" data-i18n="dl1_sub">Open source · MIT · Audit your whole sitemap</span>
-              </span>
-            </a>
-          </div>
         </div>
 
         <figure class="hero-visual">
           <img src="/hero-preview.png" alt="Oryon AI Search Readiness Score — example score 42/100 across the five buckets, with top fixes and what's-working callouts" />
         </figure>
+      </div>
+
+      <!-- Full-width "what gets checked" proof row — sibling of .hero-top. -->
+      <div class="signals-row" aria-label="Scoring buckets">
+        <div class="signal-card">
+          <div class="signal-name" data-i18n="b1_name">Schema &amp; structure</div>
+          <div class="signal-meta" data-i18n="b1_meta">8 signals · 30 pts</div>
+        </div>
+        <div class="signal-card">
+          <div class="signal-name" data-i18n="b2_name">Content format</div>
+          <div class="signal-meta" data-i18n="b2_meta">5 signals · 25 pts</div>
+        </div>
+        <div class="signal-card">
+          <div class="signal-name" data-i18n="b3_name">Authority</div>
+          <div class="signal-meta" data-i18n="b3_meta">5 signals · 20 pts</div>
+        </div>
+        <div class="signal-card">
+          <div class="signal-name" data-i18n="b4_name">Crawlability</div>
+          <div class="signal-meta" data-i18n="b4_meta">6 signals · 15 pts</div>
+        </div>
+        <div class="signal-card">
+          <div class="signal-name" data-i18n="b5_name">Freshness</div>
+          <div class="signal-meta" data-i18n="b5_meta">3 signals · 10 pts</div>
+        </div>
+      </div>
+
+      <div class="download-row download-row-single">
+        <a href="https://github.com/SEOryon/oryon-score" target="_blank" rel="noopener" class="dl-chip">
+          <span class="dl-icon" aria-hidden="true">★</span>
+          <span class="dl-label">
+            <span class="dl-title" data-i18n="dl1_title">Star on GitHub</span>
+            <span class="dl-sub" data-i18n="dl1_sub">Open source · MIT · Audit your whole sitemap</span>
+          </span>
+        </a>
       </div>
     </section>
 
