@@ -13,3 +13,4 @@ node_modules/
 report.json
 .pytest_cache/
 .coverage
+.env*
