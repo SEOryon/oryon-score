@@ -266,6 +266,24 @@ machine's network and CPU.
 
 ## Changelog
 
+### 0.3.1 — 2026-07-17
+
+- **Fixed: the "Named author / byline" check no longer credits ordinary prose.**
+  The old rule lowercased the whole page and matched `by [a-z]+ [a-z]+`, so any
+  sentence containing "… by *word* *word* …" scored a byline — proven live on
+  roi.seoryon.com, whose body ("backed by a public poll of 4,000 buyers", "the
+  default by business type") earned 5/5 for a named author with **no author
+  anywhere on the page**. The check now credits an author only from an honest
+  source: JSON-LD `author`, a `<meta name="author">` (or `article:author`) tag,
+  or a byline *anchored to author context* — author/byline-marked markup
+  (`rel="author"`, `itemprop="author"`, a `class`/`id` naming an author), or a
+  case-sensitive "By &lt;Capitalized Name&gt;" line at the head of a short block
+  (a dateline/header). Arbitrary body prose, mid-sentence name-drops
+  ("popularized by Rand Fishkin"), possessives ("By Jane Smith's estimate"), and
+  Title-Case headings ("By Popular Demand") no longer count; every ambiguous case
+  fails closed, and the failed detail string says so honestly. Weight unchanged
+  (5 pts). Regression tests in `tests/test_byline_check.py`.
+
 ### 0.3.0 — 2026-07-17
 
 - **Fixed: the llms.txt check no longer passes on files that don't exist.** The old rule

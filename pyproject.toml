@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "oryon-score"
-version = "0.3.0"
+version = "0.3.1"
 description = "Score any URL for AI search readiness. Free open-source tool by Oryon."
 readme = "README.md"
 authors = [{ name = "Amaury", email = "amaury@seoryon.com" }]

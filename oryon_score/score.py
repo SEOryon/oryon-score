@@ -996,25 +996,164 @@ def _check_internal_links(soup: BeautifulSoup, page_host: str) -> SignalResult:
     )
 
 
-def _check_author_byline(soup: BeautifulSoup, jsonld: list[dict]) -> SignalResult:
-    # JSON-LD author field
-    has_author = False
+# --- Named-author detection -------------------------------------------------
+# A real byline names a *person*: "Jane Smith", "By A. K. Rowling", "Jane de Sousa".
+# The distinguishing signal is proper-noun capitalization, which is why these
+# patterns are case-SENSITIVE. The old check lowercased the whole page and matched
+# `by [a-z]+ [a-z]+`, so ordinary prose like "backed by a public poll" scored a
+# byline (proven live on roi.seoryon.com). We now credit an author only from
+# structured data, a <meta name="author"> tag, or a byline *anchored to author
+# context* — an author-marked element, or a "By <Name>" line at the head of a
+# short block (a dateline/header). Arbitrary body prose never counts; ambiguity
+# fails closed.
+_UP = r"[^\W\d_a-z]"                       # one uppercase letter (Unicode-aware)
+# A capitalized name word ("Jane", "O'Brien", "Anne-Marie"). It must END on a
+# letter/digit — never on a trailing ' . or - — so "By Jane O'Brien's report"
+# can't backtrack the last token down to "O'" and slip past the tail guard.
+_NAME_CORE = _UP + r"(?:[\w.'’\-]*[^\W_])?"
+_INITIAL = _UP + r"\."                      # a single initial, e.g. "A." in "A. K. Rowling"
+_PARTICLE = r"(?:de|del|della|der|di|da|dos|van|von|la|le|bin|al)"  # nobiliary particles
+# The first token is a real capitalized word or initial (not a bare particle);
+# each following token may also be a nobiliary particle. 1–3 extra tokens
+# guarantees at least a first + last name.
+_NAME_HEAD = r"(?:" + _NAME_CORE + r"|" + _INITIAL + r")"
+_NAME_TOKEN = r"(?:" + _NAME_CORE + r"|" + _INITIAL + r"|" + _PARTICLE + r")"
+_AUTHOR_NAME = _NAME_HEAD + r"(?:\s+" + _NAME_TOKEN + r"){1,3}"
+# Negative tail: a byline ends or is followed by a separator/date — never by a
+# lowercase word or a possessive. Rejects "By Jane Smith's estimate…" (the name
+# backtracks to "Jane Smith", leaving a dangling "'s") and "By December Analysts
+# expect…", while keeping "By Jane Smith", "By Jane Smith · 2026", "By Jane
+# O'Brien". The apostrophe alternative catches the possessive; the \s+[a-z]
+# alternative catches a following lowercase word.
+_BYLINE_TAIL = r"(?![’'a-z]|\s+[a-z])"
+_BY = r"(?:[Ww]ritten\s+)?[Bb]y[:\s]\s*"
+# "By <Name>" anchored to the start of a text block (a byline/dateline line).
+_BYLINE_HEAD_RE = re.compile(r"^" + _BY + r"(" + _AUTHOR_NAME + r")" + _BYLINE_TAIL)
+# "By <Name>" anywhere inside an already author-scoped element.
+_BYLINE_INLINE_RE = re.compile(r"\b" + _BY + r"(" + _AUTHOR_NAME + r")" + _BYLINE_TAIL)
+# A bare capitalized full name — only trusted inside author-scoped markup.
+_BARE_NAME_RE = re.compile(_AUTHOR_NAME)
+# class/id that names an author, without matching "authority"/"authored-*noise".
+_AUTHOR_ATTR_RE = re.compile(r"byline|author(?!ity)", re.IGNORECASE)
+# A byline element's own text stays short; longer text is prose, not a byline.
+_BYLINE_MAX_LEN = 120
+# Tags that can hold a byline line. Heading tags (h1–h6) are deliberately absent:
+# real bylines don't live in headings, but Title-Case headings ("By Popular
+# Demand", "By Design") would otherwise read as "By <Name>". Author-classed
+# headings are still caught via the markup path.
+_BYLINE_TAGS = ("p", "div", "span", "address", "header", "li", "small",
+                "cite", "figcaption", "td")
+# Common capitalized UI/nav bigrams that are not personal names. A "name" made up
+# entirely of these is rejected, so a `rel="author"` link reading "Read More"
+# doesn't score a byline.
+_NON_NAME_WORDS = frozenset({
+    "read", "more", "learn", "home", "page", "pages", "next", "previous", "prev",
+    "back", "all", "view", "views", "share", "shares", "related", "post", "posts",
+    "comment", "comments", "reply", "sign", "log", "login", "menu", "search",
+    "subscribe", "newsletter", "follow", "contact", "about", "privacy", "terms",
+    "cookie", "cookies", "skip", "toggle", "close", "open", "show", "hide",
+    "the", "and", "our", "team", "staff", "editor", "editors", "admin",
+})
+
+
+def _jsonld_names_author(jsonld: list[dict]) -> bool:
+    """True if any JSON-LD node carries a non-empty author."""
     for entry in jsonld:
-        nodes = entry.get("@graph", [entry])
+        nodes = entry.get("@graph", [entry]) if isinstance(entry, dict) else []
         for n in nodes:
             if isinstance(n, dict) and n.get("author"):
-                has_author = True
-                break
-        if has_author:
-            break
-    # Or visible byline
-    if not has_author:
-        text = soup.get_text(separator=" ", strip=True).lower()
-        has_author = bool(re.search(r"\bby [a-z]+\s+[a-z]+\b|written by\b|author:", text[:3000]))
+                return True
+    return False
+
+
+def _meta_names_author(soup: BeautifulSoup) -> bool:
+    """True if a <meta name=author> (or article:author) names someone."""
+    for tag in soup.find_all("meta"):
+        key = (tag.get("name") or tag.get("property") or "").strip().lower()
+        if key in ("author", "article:author") and (tag.get("content") or "").strip():
+            return True
+    return False
+
+
+def _is_author_element(tag) -> bool:
+    """True if a tag is explicitly marked as author/byline context."""
+    rel = tag.get("rel")
+    if rel:
+        rels = rel if isinstance(rel, list) else [rel]
+        if any("author" in str(r).lower() for r in rels):
+            return True
+    itemprop = tag.get("itemprop")
+    if itemprop:
+        props = itemprop if isinstance(itemprop, list) else [itemprop]
+        if any("author" in str(p).lower() for p in props):
+            return True
+    cls = tag.get("class") or []
+    hay = " ".join(cls if isinstance(cls, list) else [cls]) + " " + (tag.get("id") or "")
+    return bool(hay.strip()) and bool(_AUTHOR_ATTR_RE.search(hay))
+
+
+def _is_person_name(name: str) -> bool:
+    """Reject 'names' made only of UI/nav words ('Read More', 'View All')."""
+    tokens = [t.strip(".'’-") for t in name.split() if t.strip(".'’-")]
+    return any(t.lower() not in _NON_NAME_WORDS for t in tokens)
+
+
+def _markup_names_author(soup: BeautifulSoup) -> bool:
+    """True if author-marked markup contains a real name."""
+    for tag in soup.find_all(_is_author_element):
+        text = tag.get_text(" ", strip=True)
+        if not text:
+            continue
+        m = _BYLINE_INLINE_RE.search(text)
+        if m and _is_person_name(m.group(1)):
+            return True
+        if len(text) <= _BYLINE_MAX_LEN:
+            m = _BARE_NAME_RE.search(text)
+            if m and _is_person_name(m.group(0)):
+                return True
+    return False
+
+
+def _visible_byline(soup: BeautifulSoup) -> bool:
+    """True if a short block *starts with* a 'By <Name>' byline (dateline/header)."""
+    for tag in soup.find_all(_BYLINE_TAGS):
+        text = tag.get_text(" ", strip=True)
+        if not text or len(text) > _BYLINE_MAX_LEN:
+            continue
+        m = _BYLINE_HEAD_RE.match(text)
+        if m and _is_person_name(m.group(1)):
+            return True
+    return False
+
+
+def _named_author_source(soup: BeautifulSoup, jsonld: list[dict]) -> str | None:
+    """Return which honest source names an author, or None. Fails closed."""
+    if _jsonld_names_author(jsonld):
+        return "jsonld"
+    if _meta_names_author(soup):
+        return "meta"
+    if _markup_names_author(soup):
+        return "markup"
+    if _visible_byline(soup):
+        return "byline"
+    return None
+
+
+def _check_author_byline(soup: BeautifulSoup, jsonld: list[dict]) -> SignalResult:
+    source = _named_author_source(soup, jsonld)
+    passed = source is not None
+    detail = {
+        "jsonld": "Author named in JSON-LD structured data.",
+        "meta": "Author named in a <meta name=\"author\"> tag.",
+        "markup": "Named author found in author/byline markup.",
+        "byline": "Visible \"By <Name>\" byline detected.",
+    }.get(source or "",
+          "No named author found — no JSON-LD/meta author, and no byline markup "
+          "or \"By <Name>\" line (prose mentions of \"by …\" don't count).")
     return SignalResult(
-        "Named author / byline", "authority", has_author, 5, 5 if has_author else 0,
-        "Author named (schema or visible byline)." if has_author else "No author byline detected.",
-        None if has_author else "Name a real author with a profile page. E-E-A-T's first E = experience, and that means a person.",
+        "Named author / byline", "authority", passed, 5, 5 if passed else 0,
+        detail,
+        None if passed else "Name a real author with a profile page. E-E-A-T's first E = experience, and that means a person.",
     )
 
 
