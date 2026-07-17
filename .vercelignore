@@ -1,0 +1,21 @@
+# Deploy exactly what production needs: web/, api/, oryon_score/, vercel.json.
+# Local development cruft must never enter the upload bundle — a stale
+# .env.local in the bundle made the Lambda bootstrap fail with
+# EnvFileReadError (FUNCTION_INVOCATION_FAILED) on 2026-07-17.
+.git
+.gitignore
+.venv-test
+.venv
+venv
+.env*
+.pytest_cache
+__pycache__
+*.egg-info
+tests
+examples
+.vercel
+.DS_Store
+*.log
+LAUNCH_PLAYBOOK.md
+SECURITY_REVIEW.md
+CONTRIBUTING.md
