@@ -12,7 +12,7 @@
     "freshness":        { "earned": 3.0,  "max": 10, "percent": 30.0 }
   },
   "fixes": [
-    "Wrap your FAQ section in FAQPage JSON-LD — highest-correlation signal for AI Overview citations.",
+    "If the page has a visible FAQ section, mirror it in FAQPage JSON-LD so the Q&A is machine-readable. No rich-result promise — Google restricted FAQ rich results to government and health sites in 2023 and removed them for all sites in May 2026.",
     "Add a 50-word TL;DR after the H1. AI summarizers lift TL;DR blocks at much higher rates.",
     "Expose a dateModified in JSON-LD or via Last-Modified header. AI prioritizes fresh content.",
     "Use 'As of {month} 2026' on every claim. Undated content reads stale to AI models.",

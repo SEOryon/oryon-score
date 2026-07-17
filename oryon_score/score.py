@@ -308,16 +308,19 @@ def _norm_url(url: str) -> str:
     return url
 
 
+_REQUEST_HEADERS = {
+    "User-Agent": UA,
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "X-Tool": "OryonAISearchScore/1.0",
+}
+
+
 def _fetch(url: str) -> tuple[httpx.Response | None, str | None]:
-    headers = {
-        "User-Agent": UA,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache",
-        "X-Tool": "OryonAISearchScore/1.0",
-    }
+    headers = _REQUEST_HEADERS
     # Install a fresh per-fetch IP-pin map. _validate_url_safety() writes
     # validated address tuples into it; the monkey-patched getaddrinfo reads
     # from it. This is what closes the DNS-rebind TOCTOU window.
@@ -422,14 +425,259 @@ def _check_open_graph(soup: BeautifulSoup) -> SignalResult:
     )
 
 
-def _check_llms_txt(parsed_url) -> SignalResult:
+_LLMS_PROBE_PATH = "/oryon-soft404-probe-do-not-create.txt"
+# Soft-404 control path for the llms.txt check. Deliberately weird so no real
+# site has a file there; anything answering 200 for it answers 200 for
+# everything. (A site could special-case this exact path to game the check —
+# but anyone with that much control could just create a real llms.txt.)
+
+_LLMS_PROBE_TIMEOUT_S = 3.0     # httpx per-phase timeout inside the probe
+_LLMS_PROBE_WALL_CLOCK_S = 4.0  # hard deadline across the whole probe call
+_LLMS_PROBE_SNIFF_BYTES = 4096  # the probe only ever needs enough to sniff
+
+# Probe statuses that genuinely mean "this path does not exist here". Anything
+# else >= 400 (401/403/429/5xx) proves nothing about llms.txt authenticity and
+# fails closed — a throttled, WAF-guarded, or erroring probe is not a
+# verification.
+_PROBE_ABSENCE_STATUSES = frozenset({404, 410})
+
+
+def _probe_soft404(url: str, _transport=None) -> tuple[int, str, str] | None:
+    """Fetch the soft-404 control path with hard, authoritative resource bounds.
+
+    Returns (status_code, content_type, body_head) or None on ANY failure —
+    SSRF refusal, DNS error, timeout, deadline, unexpected content-encoding,
+    anything. The caller treats None as "could not verify" and fails closed,
+    so this function must never raise.
+
+    The probe's only jobs are: report the status of a nonsense path, and carry
+    enough of the body to sniff HTML. It therefore reads AT MOST
+    _LLMS_PROBE_SNIFF_BYTES and only for 2xx responses. Bound mechanics, each
+    chosen against a specific reproduced bypass:
+      - follow_redirects=False: intermediate redirect bodies would be read in
+        full outside our loop. A redirect IS a probe result.
+      - Accept-Encoding: identity, and any response that still declares a
+        content-encoding is refused: iter_bytes() is post-decode, so a 2KB
+        gzip bomb could materialize megabytes before a byte-capped loop runs.
+        With identity encoding, raw bytes ARE the body.
+      - iter_raw() with no chunk_size yields each network read as it arrives,
+        so a slow drip hits the deadline check on every arrival instead of
+        starving a rechunking buffer.
+      - The wall-clock deadline starts before URL validation/DNS, and is
+        checked after headers and per raw chunk.
+    `_transport` is a test seam (httpx.MockTransport); production passes None.
+    """
+    try:
+        deadline = time.monotonic() + _LLMS_PROBE_WALL_CLOCK_S
+        pins: dict = {}
+        if _validate_url_safety(url, pin_into=pins) is not None:
+            return None
+        _DNS_PIN_TLS.pins = pins
+        try:
+            headers = dict(_REQUEST_HEADERS)
+            headers["Accept-Encoding"] = "identity"
+            client_kwargs: dict = {
+                "timeout": _LLMS_PROBE_TIMEOUT_S,
+                "follow_redirects": False,
+                "headers": headers,
+                "event_hooks": {"request": [_ssrf_guard]},
+            }
+            if _transport is not None:
+                client_kwargs["transport"] = _transport
+            with httpx.Client(**client_kwargs) as client:
+                with client.stream("GET", url) as r:
+                    status = r.status_code
+                    ctype = (r.headers.get("content-type") or "").lower()
+                    if time.monotonic() > deadline:
+                        return None
+                    if not (200 <= status < 300):
+                        # Body irrelevant for non-2xx probe results.
+                        return status, ctype, ""
+                    if (r.headers.get("content-encoding") or "").strip().lower() not in ("", "identity"):
+                        # Server ignored identity — refuse rather than decode.
+                        return None
+                    chunks: list[bytes] = []
+                    total = 0
+                    try:
+                        for chunk in r.iter_raw():
+                            # Deadline expiry means the evidence took too long
+                            # to arrive — expired evidence must NEVER be
+                            # scored, so this is None (fail closed), not a
+                            # break-and-return. Only the byte cap breaks: a
+                            # full sniff window read in time is complete
+                            # evidence.
+                            if time.monotonic() > deadline:
+                                return None
+                            # Keep only what the sniff needs — a single raw
+                            # network read can be 64KB+; don't buffer past
+                            # the cap.
+                            needed = _LLMS_PROBE_SNIFF_BYTES - total
+                            chunks.append(chunk[:needed])
+                            total += min(len(chunk), needed)
+                            if total >= _LLMS_PROBE_SNIFF_BYTES:
+                                break
+                    except httpx.StreamConsumed:
+                        # Preloaded responses (e.g. MockTransport byte content)
+                        # can't be re-streamed; their body is already in memory.
+                        chunks = [r.content[:_LLMS_PROBE_SNIFF_BYTES]]
+                    if time.monotonic() > deadline:
+                        return None
+            head = b"".join(chunks)[:_LLMS_PROBE_SNIFF_BYTES].decode("utf-8", "replace")
+            return status, ctype, head
+        finally:
+            _DNS_PIN_TLS.pins = None
+    except Exception:
+        return None
+
+
+# HTML "ASCII whitespace" plus the BOM — everything a browser skips before the
+# first tag. \f (form feed) and \v included; omitting \f was a reproduced bypass.
+_LEADING_JUNK = "\ufeff \t\r\n\f\v"
+
+
+def _looks_like_html(text: str) -> bool:
+    # Starts-with only, deliberately: fallback/error pages virtually always open
+    # with a tag ("<!doctype", "<html", "<div", "<script", ...), while a real
+    # llms.txt is markdown and opens with "# " (H1 first, per llmstxt.org).
+    # A markdown body that merely *mentions* "<html" mid-text must NOT be
+    # rejected. Junk is stripped BEFORE slicing, so padding cannot push the
+    # tag past the window.
+    head = text.lstrip(_LEADING_JUNK)[:64].lower()
+    return head.startswith("<")
+
+
+def _check_llms_txt(parsed_url, fetch=None, probe=None) -> SignalResult:
+    # A 200 alone proves nothing: SPA hosts serve their index.html for every
+    # missing path, so the old `200 and len > 50` check awarded 3/3 phantom
+    # credit to sites whose /llms.txt has never existed. Gates, in order:
+    #   1. 200 + non-trivial body.
+    #   2. Text content: content-type must be text/* (or absent) and never
+    #      text/html; body must not open like markup.
+    #   3. Soft-404 control probe (resource-bounded, single hop, never raises):
+    #        - 404/410           -> path genuinely absent -> verification PASSES
+    #        - 3xx, and llms.txt was served WITHOUT redirects -> catch-all
+    #                               redirects unknown paths while llms.txt
+    #                               answers directly -> distinct handlers -> PASSES
+    #        - 3xx, but llms.txt itself arrived via redirects -> same handler
+    #                               class -> can't distinguish -> FAIL CLOSED
+    #        - other >= 400      -> WAF/throttle/error -> can't verify -> FAIL CLOSED
+    #        - transport failure -> can't verify -> FAIL CLOSED
+    #        - 2xx HTML-ish      -> SPA shell for unknown paths while llms.txt
+    #                               is text -> distinct handlers -> PASSES
+    #        - 2xx anything else -> the site 200s arbitrary paths with
+    #                               non-HTML content; a "real" llms.txt is
+    #                               indistinguishable from that catch-all
+    #                               (near-identical or not — both score zero,
+    #                               so no content comparison is needed) -> FAIL CLOSED
+    #        - anything else (1xx, malformed result) -> FAIL CLOSED
+    fetch = fetch or _fetch
+    probe = probe or _probe_soft404
     base = f"{parsed_url.scheme}://{parsed_url.netloc}"
-    r, _ = _fetch(f"{base}/llms.txt")
-    ok = r is not None and r.status_code == 200 and len(r.text) > 50
+    name, bucket, weight = "llms.txt file", "crawlability", 3
+    fix = "Add a real /llms.txt file (text/plain, llmstxt.org spec) at the site root."
+
+    r, _ = fetch(f"{base}/llms.txt")
+    if r is None or r.status_code != 200 or len(r.text) <= 50:
+        return SignalResult(name, bucket, False, weight, 0, "No /llms.txt found.", fix)
+
+    ctype = (r.headers.get("content-type") or "").lower()
+    if "text/html" in ctype or _looks_like_html(r.text):
+        return SignalResult(
+            name, bucket, False, weight, 0,
+            "The /llms.txt URL returns an HTML page — almost always the site's "
+            "fallback page for missing paths, not a real llms.txt.",
+            fix + " An HTML fallback page doesn't count.",
+        )
+    if ctype and not ctype.startswith("text/"):
+        return SignalResult(
+            name, bucket, False, weight, 0,
+            f"The /llms.txt URL returns content-type {ctype.split(';')[0]!r} — "
+            "a real llms.txt is a plain-text (markdown) file.",
+            fix,
+        )
+
+    # Only candidate passes pay for the control probe, so the common case
+    # (no llms.txt -> 404) costs no extra fetch. The whole probe interaction —
+    # call, shape validation, typing — sits inside one fail-closed boundary:
+    # a malformed result from an injected probe must degrade to "could not
+    # verify", never to a crash.
+    probe_status = probe_ctype = probe_head = None
+    try:
+        result = probe(f"{base}{_LLMS_PROBE_PATH}")
+        # Strict shape: exactly (int, str, str) in a tuple. Coercion would let
+        # a malformed result (a list, a float status) sneak into a pass branch.
+        if (
+            isinstance(result, tuple)
+            and len(result) == 3
+            and type(result[0]) is int
+            and isinstance(result[1], str)
+            and isinstance(result[2], str)
+        ):
+            probe_status = result[0]
+            probe_ctype = result[1].lower()
+            probe_head = result[2]
+    except Exception:
+        probe_status = None
+    if probe_status is None:
+        return SignalResult(
+            name, bucket, False, weight, 0,
+            "Found a plain-text /llms.txt, but the soft-404 control probe failed "
+            "(network error or deadline), so it can't be distinguished from a "
+            "catch-all response. Not scored — re-run to verify.",
+            fix + " (Could not verify this attempt; transient — re-running may succeed.)",
+        )
+    if probe_status in _PROBE_ABSENCE_STATUSES:
+        return SignalResult(
+            name, bucket, True, weight, 3,
+            "llms.txt present at site root (plain text; unknown paths correctly "
+            "return not-found).",
+            None,
+        )
+    if 300 <= probe_status < 400:
+        # Only distinct if the llms.txt itself was served WITHOUT redirects —
+        # _fetch follows redirects silently, so consult response.history.
+        if getattr(r, "history", None):
+            return SignalResult(
+                name, bucket, False, weight, 0,
+                "Both /llms.txt and unknown paths respond with redirects on this "
+                "site, so a real file can't be distinguished from a redirecting "
+                "catch-all. Not scored.",
+                fix + " Serve /llms.txt directly (no redirect) so it is verifiable.",
+            )
+        return SignalResult(
+            name, bucket, True, weight, 3,
+            "llms.txt present at site root (plain text, served directly while "
+            "unknown paths redirect).",
+            None,
+        )
+    if probe_status >= 400:
+        return SignalResult(
+            name, bucket, False, weight, 0,
+            f"Found a plain-text /llms.txt, but this site answers unknown paths "
+            f"with HTTP {probe_status} (a WAF or security layer, not a clean 404), "
+            "so a real file can't be distinguished from a protected fallback. Not scored.",
+            fix + " Make unknown paths return 404 so a real llms.txt is verifiable.",
+        )
+    if 200 <= probe_status < 300:
+        if "text/html" in probe_ctype or _looks_like_html(probe_head):
+            return SignalResult(
+                name, bucket, True, weight, 3,
+                "llms.txt present at site root (plain text, distinct from the "
+                "site's HTML fallback for unknown paths).",
+                None,
+            )
+        return SignalResult(
+            name, bucket, False, weight, 0,
+            "This site serves 200 non-HTML responses for arbitrary paths, so the "
+            "/llms.txt response can't be distinguished from a catch-all. Not scored.",
+            fix + " Make unknown paths return 404 so a real llms.txt is verifiable.",
+        )
+    # 1xx or anything unclassified: no evidence either way.
     return SignalResult(
-        "llms.txt file", "crawlability", ok, 3, 3 if ok else 0,
-        "llms.txt present at site root." if ok else "No /llms.txt found.",
-        None if ok else "Add a /llms.txt file at the site root following llmstxt.org spec.",
+        name, bucket, False, weight, 0,
+        f"The soft-404 control probe returned an unexpected HTTP {probe_status}, "
+        "so llms.txt authenticity can't be verified. Not scored.",
+        fix + " (Could not verify this attempt; ambiguity is not scored.)",
     )
 
 
@@ -499,7 +747,7 @@ def _check_article_schema(types: set[str]) -> SignalResult:
         "Article schema", "schema_structure", has, 5, 5 if has else 0,
         f"Article-type schema present: {sorted(types & {'Article', 'NewsArticle', 'BlogPosting', 'TechArticle'})}" if has
         else "No Article / BlogPosting / NewsArticle schema found.",
-        None if has else "Add JSON-LD with @type: Article (or BlogPosting). Required for most AI Overview citations.",
+        None if has else "Add JSON-LD with @type: Article (or BlogPosting) — a machine-readable statement of what this page is, who wrote it, and when it changed.",
     )
 
 
@@ -508,7 +756,7 @@ def _check_faq_schema(types: set[str]) -> SignalResult:
     return SignalResult(
         "FAQ schema", "schema_structure", has, 6, 6 if has else 0,
         "FAQPage JSON-LD present." if has else "No FAQPage schema.",
-        None if has else "Wrap your FAQ section in FAQPage JSON-LD — highest-correlation signal for AI Overview citations.",
+        None if has else "If the page has a visible FAQ section, mirror it in FAQPage JSON-LD so the Q&A is machine-readable. No rich-result promise — Google restricted FAQ rich results to government and health sites in 2023 and removed them for all sites in May 2026.",
     )
 
 
@@ -517,7 +765,7 @@ def _check_howto_schema(types: set[str]) -> SignalResult:
     return SignalResult(
         "HowTo schema", "schema_structure", has, 3, 3 if has else 0,
         "HowTo schema present." if has else "No HowTo schema.",
-        None if has else "If your page has steps, add HowTo schema. Heavily lifted by AI summarizers.",
+        None if has else "If the page documents real steps, mirror them in HowTo JSON-LD so the sequence is machine-readable. HowTo rich results are gone — the value is unambiguous extraction, not a SERP feature.",
     )
 
 

@@ -1,0 +1,22 @@
+# Oryon AI Search Readiness Score
+
+> Free, open-source scorer for AI-search readiness. Give it any public URL and it
+> returns a 0-100 score across 27 deterministic signals in 5 buckets (schema &
+> structure, content format, authority, crawlability, freshness), plus concrete
+> fixes. No signup, no LLM calls, no API keys. Built by SEOryon, MIT licensed.
+
+The scorer runs entirely from raw HTML — the same thing AI crawlers receive.
+Scoring is deterministic: same page, same score. The hosted API is
+`GET /api/score?url=<url>` and returns JSON.
+
+## Docs
+
+- [How it works](https://score.seoryon.com/): the scoring page, with every signal and weight explained
+- [Source code](https://github.com/SEOryon/oryon-score): the full engine, MIT — the hosted tool runs this exact code
+- [Python package](https://pypi.org/project/oryon-score/): `pip install oryon-score` for CLI or library use
+
+## Related tools
+
+- [AI Citability Grader](https://cite.seoryon.com): paste text, get a 7-factor citability score
+- [SEO ROI calculator](https://roi.seoryon.com): what organic traffic is worth, in your numbers
+- [SEOryon](https://seoryon.com): the company behind these tools

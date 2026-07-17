@@ -33,7 +33,7 @@ $ oryon-score https://example.com/blog/ai-overview-guide
 
   Top fixes (in order of impact)
     ✗ FAQ schema  (No FAQPage schema.)
-      → Wrap your FAQ section in FAQPage JSON-LD — highest-correlation signal.
+      → If the page has a visible FAQ section, mirror it in FAQPage JSON-LD.
     ✗ TL;DR / summary block near top  (No TL;DR or summary block found.)
       → Add a 50-word TL;DR after the H1. AI summarizers lift these at much higher rates.
     ✗ Last modified date  (No modification date detected.)
@@ -62,7 +62,7 @@ If you want **continuous scoring across every URL on your site**, plus AI citati
 
 ### Schema & structure (30 pts)
 - Article / BlogPosting JSON-LD
-- **FAQPage schema** (highest-correlation signal)
+- **FAQPage schema** (only when the page has a visible FAQ — no rich-result promise; Google removed FAQ rich results for all sites in May 2026)
 - HowTo schema
 - BreadcrumbList schema
 - Heading hierarchy (1 H1, ≥3 H2s)
@@ -261,6 +261,35 @@ The `oryon-score` CLI calls `score_url()` **directly on your own machine** —
 it does NOT go through `/api/score`. CLI users are therefore not rate-
 limited by the hosted endpoint; they are limited only by their own
 machine's network and CPU.
+
+---
+
+## Changelog
+
+### 0.3.0 — 2026-07-17
+
+- **Fixed: the llms.txt check no longer passes on files that don't exist.** The old rule
+  (`HTTP 200 + length > 50`) awarded 3/3 to any SPA host whose catch-all rewrite serves the
+  homepage for missing paths — proven live against the hosted scorer itself. The check now
+  requires plain text (rejects `text/html` by header or body sniff) **and** runs a soft-404
+  control probe: a nonsense path at the same root must come back clearly distinct — a clean
+  404/410, a redirect (while llms.txt is served directly), or the site's HTML shell. Any
+  ambiguous outcome fails closed. Weight
+  unchanged (3 pts); ambiguity fails closed.
+- **Fixed: brotli decode.** `_fetch()` advertised `Accept-Encoding: br` without a brotli backend
+  installed, so every DOM signal silently scored 0 against brotli-serving origins (most of the
+  modern web) — the hosted scorer graded its own homepage 20/F. `brotli>=1.1` is now a declared
+  dependency, with a regression test (`tests/test_brotli.py`).
+- **Honest copy: schema fix strings no longer promise rich results or citation correlations.**
+  "Highest-correlation signal for AI Overview citations" (FAQ), "Required for most AI Overview
+  citations" (Article) and "Heavily lifted by AI summarizers" (HowTo) are gone — Google removed
+  FAQ rich results for all sites in May 2026 (after restricting them to gov/health in 2023)
+  and retired HowTo rich results in 2023; no
+  controlled study supports a schema→citation correlation. The strings now describe what
+  structured data actually does: make the page machine-readable and unambiguous. Copy only —
+  no weight changed.
+- score.seoryon.com now serves a real `/llms.txt` (text/plain), so its own llms.txt point is
+  earned rather than phantom.
 
 ---
 
