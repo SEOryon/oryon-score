@@ -25,6 +25,9 @@ dependencies = [
   "httpx>=0.27",
   "beautifulsoup4>=4.12",
   "lxml>=5.0",
+  # Required so httpx can decode Content-Encoding: br — _fetch() advertises it.
+  # Without it, brotli origins parse as binary garbage and DOM signals score 0.
+  "brotli>=1.1",
 ]
 
 [project.urls]

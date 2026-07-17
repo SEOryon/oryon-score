@@ -1,3 +1,8 @@
 httpx>=0.27
 beautifulsoup4>=4.12
 lxml>=5.0
+# httpx only decodes Content-Encoding: br when a brotli backend is installed.
+# _fetch() advertises "br" in Accept-Encoding, so without this package every
+# brotli-serving origin (Vercel/Cloudflare/Netlify defaults) hands BeautifulSoup
+# undecoded bytes and all DOM signals silently score 0. See tests/test_brotli.py.
+brotli>=1.1
