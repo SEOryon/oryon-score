@@ -552,6 +552,11 @@
     b.addEventListener("click", () => applyLang(b.getAttribute("data-lang")));
   });
 
+  // Disabled CTAs — app isn't live yet, block navigation regardless of CSS state
+  document.querySelectorAll("a.is-disabled").forEach((a) => {
+    a.addEventListener("click", (e) => e.preventDefault());
+  });
+
   // Boot
   injectFaqLd();
   applyLang(pickInitialLang());

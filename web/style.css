@@ -103,6 +103,13 @@ a:hover { color: var(--brand-hover); }
 .navlinks a.cta-link:hover { background: var(--brand-hover); color: var(--ink-on-brand); }
 .navlinks a.cta-link:active { background: var(--brand-pressed); }
 
+/* Disabled CTA — app isn't live yet; visually inert, no hover/active response */
+a.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ============================================================
    Main + hero — operator/dashboard feel, NOT centered marketing hero
    ============================================================ */
