@@ -25,8 +25,8 @@
       cta_trial: "Start free trial →",
 
       hero_pill: "Live · 27 signals · 5 buckets · Free forever",
-      hero_h1: 'Score any URL for <span class="brand-text">AI search readiness</span>.',
-      hero_sub: "Twenty-seven signals across schema, content format, authority, crawlability, and freshness. A free GEO (generative engine optimization) audit, inspired by Google's 2026 AI-search guidance. Results in 10 seconds — no signup, no LLM calls, no API keys.",
+      hero_h1: 'Score any blog URL or article URL for <span class="brand-text">AI search readiness</span>.',
+      hero_sub: "Twenty-seven signals across schema, content format, authority, crawlability, and freshness — built for blog posts and articles, not homepages or product pages. A free GEO (generative engine optimization) audit, inspired by Google's 2026 AI-search guidance. Results in 10 seconds — no signup, no LLM calls, no API keys.",
       score_btn: "Score it →",
       hero_micro: "Paste an article URL, not the homepage. The deeper the page, the more useful the score.",
 
@@ -138,8 +138,8 @@
       cta_trial: "Kostenlos testen →",
 
       hero_pill: "Live · 27 Signale · 5 Kategorien · Für immer kostenlos",
-      hero_h1: 'Prüfe, wie bereit eine URL für die <span class="brand-text">KI-Suche</span> ist.',
-      hero_sub: "Siebenundzwanzig Signale aus Schema, Inhaltsformat, Autorität, Crawlbarkeit und Aktualität. Ein kostenloses GEO-Audit (Generative Engine Optimization), inspiriert von Googles KI-Such-Leitlinien für 2026. Ergebnis in 10 Sekunden — ohne Anmeldung, ohne LLM-Aufrufe, ohne API-Schlüssel.",
+      hero_h1: 'Prüfe, wie bereit eine Blog- oder Artikel-URL für die <span class="brand-text">KI-Suche</span> ist.',
+      hero_sub: "Siebenundzwanzig Signale aus Schema, Inhaltsformat, Autorität, Crawlbarkeit und Aktualität — gemacht für Blogartikel, nicht für Startseiten oder Produktseiten. Ein kostenloses GEO-Audit (Generative Engine Optimization), inspiriert von Googles KI-Such-Leitlinien für 2026. Ergebnis in 10 Sekunden — ohne Anmeldung, ohne LLM-Aufrufe, ohne API-Schlüssel.",
       score_btn: "Jetzt prüfen →",
       hero_micro: "Füge eine Artikel-URL ein, nicht die Startseite. Je tiefer die Seite, desto aussagekräftiger der Score.",
 
@@ -250,8 +250,8 @@
       cta_trial: "Essai gratuit →",
 
       hero_pill: "En direct · 27 signaux · 5 catégories · Gratuit à vie",
-      hero_h1: 'Évaluez la <span class="brand-text">visibilité IA</span> de n’importe quelle URL.',
-      hero_sub: "Vingt-sept signaux entre schema, format du contenu, autorité, crawlabilité et fraîcheur. Un audit GEO (generative engine optimization) gratuit, inspiré des recommandations de Google pour la recherche IA en 2026. Résultats en 10 secondes — sans inscription, sans appel à un LLM, sans clé d’API.",
+      hero_h1: 'Évaluez la <span class="brand-text">visibilité IA</span> de n’importe quelle URL de blog ou d’article.',
+      hero_sub: "Vingt-sept signaux entre schema, format du contenu, autorité, crawlabilité et fraîcheur — pensé pour les articles de blog, pas les pages d’accueil ou fiches produit. Un audit GEO (generative engine optimization) gratuit, inspiré des recommandations de Google pour la recherche IA en 2026. Résultats en 10 secondes — sans inscription, sans appel à un LLM, sans clé d’API.",
       score_btn: "Lancer l’analyse →",
       hero_micro: "Collez une URL d’article, pas la page d’accueil. Plus la page est profonde, plus le score est utile.",
 
