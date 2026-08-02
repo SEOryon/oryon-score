@@ -17,8 +17,8 @@
   // ----- I18N DICTIONARY (EN source · DE · FR natively localized) -----
   const I18N = {
     en: {
-      meta_title: "Free AI search readiness score · GEO audit for any URL · SEOryon",
-      meta_desc: "Free GEO / AI-search readiness score for any URL — 27 signals across schema, content, authority, crawlability and freshness. Generative engine optimization audit, no signup, no LLM calls. By SEOryon.",
+      meta_title: "Free AI search readiness score for blog & article URLs · SEOryon",
+      meta_desc: "Free GEO / AI-search readiness score for blog posts & articles — 27 signals: schema, content, authority, crawlability, freshness. No signup, no LLM calls.",
 
       nav_learn: "What is GEO?",
       nav_faq: "FAQ",
@@ -130,8 +130,8 @@
 
     /* ---- DE · natively localized (informal "du", marketer tone) ---- */
     de: {
-      meta_title: "Kostenloser GEO- & KI-Such-Score · SEO-Audit jeder URL · SEOryon",
-      meta_desc: "Kostenloser GEO- / KI-Such-Score für jede URL — 27 Signale aus Schema, Inhalt, Autorität, Crawlbarkeit und Aktualität. Generative Engine Optimization, ohne Anmeldung, ohne LLM-Aufrufe. Von SEOryon.",
+      meta_title: "Kostenloser GEO- & KI-Such-Score für Blogartikel · SEOryon",
+      meta_desc: "Kostenloser GEO- / KI-Such-Score für Blogartikel — 27 Signale: Schema, Inhalt, Autorität, Crawlbarkeit, Aktualität. Ohne Anmeldung, ohne LLM-Aufrufe.",
 
       nav_learn: "Was ist GEO?",
       nav_faq: "FAQ",
@@ -243,7 +243,7 @@
     /* ---- FR · natively localized (vouvoiement, marketer tone) ---- */
     fr: {
       meta_title: "Score gratuit de visibilité dans la recherche IA · Audit GEO · SEOryon",
-      meta_desc: "Score gratuit de préparation à la recherche IA / GEO pour n’importe quelle URL — 27 signaux entre schema, contenu, autorité, crawlabilité et fraîcheur. Audit de generative engine optimization, sans inscription, sans appel à un LLM. Par SEOryon.",
+      meta_desc: "Score GEO / IA gratuit pour vos articles de blog — 27 signaux entre schema, contenu, autorité, crawlabilité et fraîcheur. Sans inscription, sans appel LLM.",
 
       nav_learn: "C’est quoi, le GEO ?",
       nav_faq: "FAQ",
