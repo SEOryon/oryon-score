@@ -1,6 +1,6 @@
 # Oryon AI Search Readiness Score
 
-> Free, open-source scorer for AI-search readiness. Give it any public URL and it
+> Free, open-source scorer for AI-search readiness. Give it a public blog or article URL and it
 > returns a 0-100 score across 27 deterministic signals in 5 buckets (schema &
 > structure, content format, authority, crawlability, freshness), plus concrete
 > fixes. No signup, no LLM calls, no API keys. Built by SEOryon, MIT licensed.

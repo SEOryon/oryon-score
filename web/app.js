@@ -41,7 +41,7 @@
 
       how_h2: "How it works",
       how1_h3: "You paste a URL",
-      how1_p: "Any public page. We fetch it the same way Google's AI crawlers do — same browser headers, same network path.",
+      how1_p: "Any public blog or article URL. We fetch it the same way Google's AI crawlers do — same browser headers, same network path.",
       how2_h3: "We score 27 signals",
       how2_p: "Schema markup, FAQ blocks, heading structure, llms.txt, robots permissions, word count, dated claims, and more. No LLM calls.",
       how3_h3: "You get the fixes",
@@ -154,7 +154,7 @@
 
       how_h2: "So funktioniert’s",
       how1_h3: "Du fügst eine URL ein",
-      how1_p: "Beliebige öffentliche Seite. Wir rufen sie so ab, wie es die KI-Crawler von Google tun — gleiche Browser-Header, gleicher Netzwerkpfad.",
+      how1_p: "Jede öffentliche Blog- oder Artikel-URL. Wir rufen sie so ab, wie es die KI-Crawler von Google tun — gleiche Browser-Header, gleicher Netzwerkpfad.",
       how2_h3: "Wir prüfen 27 Signale",
       how2_p: "Schema-Markup, FAQ-Blöcke, Überschriftenstruktur, llms.txt, Robots-Regeln, Wortzahl, datierte Aussagen und mehr. Keine LLM-Aufrufe.",
       how3_h3: "Du bekommst die Lösungen",
@@ -266,7 +266,7 @@
 
       how_h2: "Comment ça marche",
       how1_h3: "Vous collez une URL",
-      how1_p: "N’importe quelle page publique. Nous l’appelons comme le font les robots IA de Google — mêmes en-têtes navigateur, même chemin réseau.",
+      how1_p: "N’importe quelle URL publique de blog ou d’article. Nous l’appelons comme le font les robots IA de Google — mêmes en-têtes navigateur, même chemin réseau.",
       how2_h3: "Nous évaluons 27 signaux",
       how2_p: "Balisage schema, blocs FAQ, hiérarchie des titres, llms.txt, autorisations robots, nombre de mots, mentions datées, et plus encore. Aucun appel à un LLM.",
       how3_h3: "Vous recevez les correctifs",
